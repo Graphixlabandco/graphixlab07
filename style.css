@@ -551,6 +551,7 @@ img { max-width: 100%; display: block; }
   position: relative;
   z-index: 1;
   padding: var(--section-padding);
+  overflow: hidden;
 }
 
 .services-grid {
@@ -703,6 +704,7 @@ img { max-width: 100%; display: block; }
   position: relative;
   z-index: 1;
   padding: var(--section-padding);
+  overflow: hidden;
 }
 
 .about-wrapper {
@@ -798,6 +800,7 @@ img { max-width: 100%; display: block; }
   z-index: 1;
   padding: var(--section-padding);
   padding-bottom: 0;
+  overflow: hidden;
 }
 
 /* Carousel */
@@ -1207,3 +1210,80 @@ img { max-width: 100%; display: block; }
   opacity: 1;
   pointer-events: all;
 }
+
+/* ── Animated Background Blobs ── */
+.services::before,
+.services::after,
+.about::before,
+.about::after,
+.reviews::before {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.12;
+  z-index: -1;
+  pointer-events: none;
+  animation: floatBlob 24s infinite alternate ease-in-out;
+}
+
+.services::before {
+  width: 320px;
+  height: 320px;
+  background: var(--pastel-baby-blue);
+  top: 10%;
+  left: -5%;
+  animation-duration: 20s;
+}
+
+.services::after {
+  width: 380px;
+  height: 380px;
+  background: var(--pastel-mint);
+  bottom: 5%;
+  right: -8%;
+  animation-duration: 26s;
+  animation-delay: -5s;
+}
+
+.about::before {
+  width: 420px;
+  height: 420px;
+  background: var(--pastel-lavender);
+  top: 15%;
+  right: 5%;
+  animation-duration: 30s;
+}
+
+.about::after {
+  width: 320px;
+  height: 320px;
+  background: var(--pastel-pink);
+  bottom: 5%;
+  left: 5%;
+  animation-duration: 22s;
+  animation-delay: -7s;
+}
+
+.reviews::before {
+  width: 480px;
+  height: 480px;
+  background: var(--pastel-rose);
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation-duration: 32s;
+}
+
+@keyframes floatBlob {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(80px, -60px) scale(1.15);
+  }
+  100% {
+    transform: translate(-50px, 80px) scale(0.9);
+  }
+}
+
