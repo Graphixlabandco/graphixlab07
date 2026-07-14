@@ -1,6 +1,162 @@
-/* ═══════════════════════════════════════════
-   GRAPHIX LAB — Interactive Script
-   ═══════════════════════════════════════════ */
+// ── Three.js Glossy 3D Glass Background ──
+(function initThreeBackground() {
+  const canvas = document.getElementById('bgCanvas');
+  if (!canvas || typeof THREE === 'undefined') return;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.25;
+
+  const scene = new THREE.Scene();
+  
+  // Perspective camera
+  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 24;
+
+  // Group to contain floating structures
+  const shapesGroup = new THREE.Group();
+  scene.add(shapesGroup);
+
+  // High-fidelity shiny glass material
+  const glassMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.35,
+    transmission: 0.95, // Highly refractive glass
+    roughness: 0.04,    // Extremely polished
+    metalness: 0.05,
+    ior: 1.54,          // Glass Index of Refraction
+    thickness: 2.5,     // Light path bending depth
+    clearcoat: 1.0,     // Glossy outer coat
+    clearcoatRoughness: 0.03,
+    specularIntensity: 1.0,
+    side: THREE.DoubleSide
+  });
+
+  // Create premium geometries
+  const geometries = [
+    new THREE.TorusKnotGeometry(1.6, 0.55, 120, 16),
+    new THREE.IcosahedronGeometry(2.0, 1),
+    new THREE.TorusGeometry(1.8, 0.5, 16, 100),
+    new THREE.SphereGeometry(1.9, 32, 32),
+    new THREE.OctahedronGeometry(2.0, 0),
+    new THREE.ConeGeometry(1.6, 3.0, 4)
+  ];
+
+  const floatingObjects = [];
+  const objectCount = 14;
+
+  for (let i = 0; i < objectCount; i++) {
+    const geo = geometries[i % geometries.length];
+    const mesh = new THREE.Mesh(geo, glassMaterial);
+
+    // Initial random placement
+    const xRange = 30;
+    const yRange = 18;
+    mesh.position.set(
+      (Math.random() - 0.5) * xRange,
+      (Math.random() - 0.5) * yRange,
+      (Math.random() - 0.5) * 8 - 4
+    );
+
+    // Dynamic scale variation
+    const scale = Math.random() * 0.7 + 0.6;
+    mesh.scale.set(scale, scale, scale);
+
+    // Custom properties for drift kinematics
+    mesh.userData = {
+      velocity: {
+        x: (Math.random() - 0.5) * 0.008 + 0.003, // slow horizontal drift
+        y: (Math.random() - 0.5) * 0.006,
+        z: (Math.random() - 0.5) * 0.002
+      },
+      rotSpeed: {
+        x: (Math.random() - 0.5) * 0.005,
+        y: (Math.random() - 0.5) * 0.005,
+        z: (Math.random() - 0.5) * 0.003
+      }
+    };
+
+    shapesGroup.add(mesh);
+    floatingObjects.push(mesh);
+  }
+
+  // Lights for high shine and specular highlights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+  scene.add(ambientLight);
+
+  // Dynamic moving colored lights to project colored reflections
+  const lightColors = [
+    0xc8b6ff, // lavender
+    0xffc6ff, // rose
+    0xbbd0ff, // baby blue
+    0xb9fbc0  // mint
+  ];
+
+  const pointLights = [];
+  lightColors.forEach((color) => {
+    const light = new THREE.PointLight(color, 2.5, 60);
+    scene.add(light);
+    pointLights.push(light);
+  });
+
+  // Resize handler
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // Animation Loop
+  let time = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    time += 0.008;
+
+    // Move lights in overlapping orbital paths for shifting reflections
+    pointLights[0].position.set(Math.sin(time) * 15, Math.cos(time * 0.7) * 10, Math.sin(time * 0.5) * 10);
+    pointLights[1].position.set(Math.cos(time * 0.8) * 15, Math.sin(time * 1.1) * 10, Math.cos(time * 0.3) * 10);
+    pointLights[2].position.set(Math.sin(time * 1.2) * 12, Math.cos(time) * 12, Math.sin(time * 0.8) * 12);
+    pointLights[3].position.set(Math.cos(time * 0.5) * 12, Math.sin(time * 0.9) * 12, Math.cos(time * 1.3) * 12);
+
+    // Update glass objects
+    floatingObjects.forEach((obj) => {
+      // Rotate slowly
+      obj.rotation.x += obj.userData.rotSpeed.x;
+      obj.rotation.y += obj.userData.rotSpeed.y;
+      obj.rotation.z += obj.userData.rotSpeed.z;
+
+      // Translate slowly
+      obj.position.x += obj.userData.velocity.x;
+      obj.position.y += obj.userData.velocity.y;
+      obj.position.z += obj.userData.velocity.z;
+
+      // Bounds wrapping (screen limits at Z=0 range approx x: -22 to +22, y: -13 to +13)
+      const xBound = 22;
+      const yBound = 13;
+
+      if (obj.position.x > xBound) {
+        obj.position.x = -xBound;
+      } else if (obj.position.x < -xBound) {
+        obj.position.x = xBound;
+      }
+
+      if (obj.position.y > yBound) {
+        obj.position.y = -yBound;
+      } else if (obj.position.y < -yBound) {
+        obj.position.y = yBound;
+      }
+    });
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+})();
+
+
 
 
 

@@ -69,9 +69,16 @@ body {
 a { color: inherit; text-decoration: none; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
 img { max-width: 100%; display: block; }
-
-
-
+/* ── Three.js Background Canvas ── */
+#bgCanvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -2;
+  pointer-events: none;
+}
 /* ── Liquid Glass Utilities ── */
 .glass-panel {
   background: var(--glass-bg);
