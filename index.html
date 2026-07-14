@@ -19,7 +19,11 @@
         <span></span><span></span><span></span>
       </button>
       <a href="#hero" class="nav-logo">
-        <span class="logo-icon">G</span>
+        <div class="logo-video-container">
+          <video autoplay loop muted playsinline class="logo-video">
+            <source src="logo.mp4" type="video/mp4">
+          </video>
+        </div>
         <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
       </a>
     </div>
@@ -60,8 +64,7 @@
     </div>
   </div>
 
-  <!-- ══════════════ THREE.JS CANVAS ══════════════ -->
-  <canvas id="bgCanvas"></canvas>
+
 
   <!-- ══════════════ HERO SECTION ══════════════ -->
   <section class="hero" id="hero">
@@ -302,7 +305,11 @@
     <footer class="footer" data-animate="fade-up">
       <div class="footer-inner">
         <div class="footer-brand">
-          <span class="logo-icon">G</span>
+          <div class="logo-video-container">
+            <video autoplay loop muted playsinline class="logo-video">
+              <source src="logo.mp4" type="video/mp4">
+            </video>
+          </div>
           <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
           <p class="footer-tagline">Engineering Experiences</p>
         </div>
@@ -340,8 +347,6 @@
     <span class="wa-tooltip">Chat with us</span>
   </a>
 
-  <!-- Three.js via CDN -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

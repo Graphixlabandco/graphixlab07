@@ -70,16 +70,7 @@ a { color: inherit; text-decoration: none; }
 button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
 img { max-width: 100%; display: block; }
 
-/* ── Three.js Background Canvas ── */
-#bgCanvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
+
 
 /* ── Liquid Glass Utilities ── */
 .glass-panel {
@@ -175,18 +166,31 @@ img { max-width: 100%; display: block; }
   text-decoration: none;
 }
 
-.logo-icon {
+.logo-video-container {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: var(--gradient-primary);
-  color: var(--bg-dark);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: 1rem;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  background: rgba(10, 10, 15, 0.8);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s var(--ease-out-expo), border-color 0.3s;
+}
+
+.logo-video-container:hover {
+  transform: scale(1.08);
+  border-color: var(--pastel-lavender);
+}
+
+.logo-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: screen; /* Blend out black video background */
+  filter: drop-shadow(0 0 6px rgba(200, 182, 255, 0.3));
 }
 
 .logo-text {
@@ -984,11 +988,11 @@ img { max-width: 100%; display: block; }
   gap: 0.3rem;
 }
 
-.footer-brand .logo-icon {
-  width: 40px;
-  height: 40px;
-  font-size: 1.1rem;
-  margin-bottom: 0.3rem;
+.footer-brand .logo-video-container {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  margin-bottom: 0.4rem;
 }
 
 .footer-tagline {
