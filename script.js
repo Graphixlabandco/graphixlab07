@@ -1,4 +1,4 @@
-// ── Three.js Glossy 3D Glass Background ──
+// ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
   const canvas = document.getElementById('bgCanvas');
   if (!canvas || typeof THREE === 'undefined') return;
@@ -7,100 +7,183 @@
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
+  renderer.toneMappingExposure = 1.5;
 
   const scene = new THREE.Scene();
   
   // Perspective camera
-  const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+  const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.z = 24;
 
-  // Group to contain floating structures
-  const shapesGroup = new THREE.Group();
-  scene.add(shapesGroup);
+  // ── 1. Twinkling Starfield ──
+  const starCount = 600;
+  const starGeo = new THREE.BufferGeometry();
+  const starPositions = new Float32Array(starCount * 3);
+  const starColors = new Float32Array(starCount * 3);
 
-  // High-fidelity shiny glass material
-  const glassMaterial = new THREE.MeshPhysicalMaterial({
-    color: 0xffffff,
-    transparent: true,
-    opacity: 0.35,
-    transmission: 0.95, // Highly refractive glass
-    roughness: 0.04,    // Extremely polished
-    metalness: 0.05,
-    ior: 1.54,          // Glass Index of Refraction
-    thickness: 2.5,     // Light path bending depth
-    clearcoat: 1.0,     // Glossy outer coat
-    clearcoatRoughness: 0.03,
-    specularIntensity: 1.0,
-    side: THREE.DoubleSide
-  });
-
-  // Create premium geometries
-  const geometries = [
-    new THREE.TorusKnotGeometry(1.6, 0.55, 120, 16),
-    new THREE.IcosahedronGeometry(2.0, 1),
-    new THREE.TorusGeometry(1.8, 0.5, 16, 100),
-    new THREE.SphereGeometry(1.9, 32, 32),
-    new THREE.OctahedronGeometry(2.0, 0),
-    new THREE.ConeGeometry(1.6, 3.0, 4)
+  // Bright pastel star colors
+  const pastelStarColors = [
+    new THREE.Color(0xc8b6ff), // Lavender
+    new THREE.Color(0xb8c0ff), // Periwinkle
+    new THREE.Color(0xbbd0ff), // Baby Blue
+    new THREE.Color(0xffc6ff), // Rose
+    new THREE.Color(0xffffff)  // Pure White
   ];
 
-  const floatingObjects = [];
-  const objectCount = 14;
+  for (let i = 0; i < starCount; i++) {
+    starPositions[i * 3] = (Math.random() - 0.5) * 80;     // X
+    starPositions[i * 3 + 1] = (Math.random() - 0.5) * 50; // Y
+    starPositions[i * 3 + 2] = (Math.random() - 0.5) * 30 - 10; // Z
 
-  for (let i = 0; i < objectCount; i++) {
-    const geo = geometries[i % geometries.length];
-    const mesh = new THREE.Mesh(geo, glassMaterial);
-
-    // Initial random placement
-    const xRange = 30;
-    const yRange = 18;
-    mesh.position.set(
-      (Math.random() - 0.5) * xRange,
-      (Math.random() - 0.5) * yRange,
-      (Math.random() - 0.5) * 8 - 4
-    );
-
-    // Dynamic scale variation
-    const scale = Math.random() * 0.7 + 0.6;
-    mesh.scale.set(scale, scale, scale);
-
-    // Custom properties for drift kinematics
-    mesh.userData = {
-      velocity: {
-        x: (Math.random() - 0.5) * 0.008 + 0.003, // slow horizontal drift
-        y: (Math.random() - 0.5) * 0.006,
-        z: (Math.random() - 0.5) * 0.002
-      },
-      rotSpeed: {
-        x: (Math.random() - 0.5) * 0.005,
-        y: (Math.random() - 0.5) * 0.005,
-        z: (Math.random() - 0.5) * 0.003
-      }
-    };
-
-    shapesGroup.add(mesh);
-    floatingObjects.push(mesh);
+    const color = pastelStarColors[Math.floor(Math.random() * pastelStarColors.length)];
+    starColors[i * 3] = color.r;
+    starColors[i * 3 + 1] = color.g;
+    starColors[i * 3 + 2] = color.b;
   }
 
-  // Lights for high shine and specular highlights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
-  scene.add(ambientLight);
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+  starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
-  // Dynamic moving colored lights to project colored reflections
-  const lightColors = [
-    0xc8b6ff, // lavender
-    0xffc6ff, // rose
-    0xbbd0ff, // baby blue
-    0xb9fbc0  // mint
+  const starMat = new THREE.PointsMaterial({
+    size: 0.18,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending
+  });
+
+  const starfield = new THREE.Points(starGeo, starMat);
+  scene.add(starfield);
+
+  // ── 2. Rotating Spiral Galaxy ──
+  const galaxyCount = 2000;
+  const galaxyGeo = new THREE.BufferGeometry();
+  const galaxyPositions = new Float32Array(galaxyCount * 3);
+  const galaxyColors = new Float32Array(galaxyCount * 3);
+
+  const innerColor = new THREE.Color(0xffc6ff); // Hot pinkish-lavender
+  const outerColor = new THREE.Color(0xbbd0ff); // Light blue
+
+  for (let i = 0; i < galaxyCount; i++) {
+    const dist = Math.pow(Math.random(), 2.2) * 18; // Concentrated in middle
+    const numArms = 2;
+    const armAngle = ((i % numArms) * 2 * Math.PI) / numArms;
+    const spin = dist * 0.45;
+
+    // Introduce random spreading so galaxy looks fluffy and nebulous
+    const spreadX = Math.pow(Math.random() - 0.5, 3) * 4 * (18 - dist) / 18;
+    const spreadY = Math.pow(Math.random() - 0.5, 3) * 4 * (18 - dist) / 18;
+    const spreadZ = Math.pow(Math.random() - 0.5, 3) * 3 * (18 - dist) / 18;
+
+    const angle = armAngle + spin;
+    const x = Math.cos(angle) * dist + spreadX;
+    const y = Math.sin(angle) * dist + spreadY;
+    const z = spreadZ - 8; // Pushed deeper in Z for depth layering
+
+    galaxyPositions[i * 3] = x;
+    galaxyPositions[i * 3 + 1] = y;
+    galaxyPositions[i * 3 + 2] = z;
+
+    // Linear interpolation from inner to outer color
+    const blendedColor = innerColor.clone().lerp(outerColor, dist / 18);
+    galaxyColors[i * 3] = blendedColor.r;
+    galaxyColors[i * 3 + 1] = blendedColor.g;
+    galaxyColors[i * 3 + 2] = blendedColor.b;
+  }
+
+  galaxyGeo.setAttribute('position', new THREE.BufferAttribute(galaxyPositions, 3));
+  galaxyGeo.setAttribute('color', new THREE.BufferAttribute(galaxyColors, 3));
+
+  const galaxyMat = new THREE.PointsMaterial({
+    size: 0.14,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.6,
+    blending: THREE.AdditiveBlending
+  });
+
+  const galaxy = new THREE.Points(galaxyGeo, galaxyMat);
+  scene.add(galaxy);
+
+  // ── 3. High-Speed Shining Asteroids ──
+  const asteroidsGroup = new THREE.Group();
+  scene.add(asteroidsGroup);
+
+  // Light bright emissive materials for asteroids
+  const asteroidMaterials = [
+    new THREE.MeshStandardMaterial({
+      color: 0xc8b6ff,
+      emissive: 0x9a7eff,
+      emissiveIntensity: 1.5,
+      roughness: 0.2,
+      metalness: 0.8
+    }), // Glowing Purple/Lavender
+    new THREE.MeshStandardMaterial({
+      color: 0xb9fbc0,
+      emissive: 0x4eff8a,
+      emissiveIntensity: 1.6,
+      roughness: 0.1,
+      metalness: 0.9
+    }), // Glowing Neon Mint
+    new THREE.MeshStandardMaterial({
+      color: 0xffd6a5,
+      emissive: 0xffaa44,
+      emissiveIntensity: 1.8,
+      roughness: 0.2,
+      metalness: 0.8
+    }), // Shining Golden Amber
+    new THREE.MeshStandardMaterial({
+      color: 0xbbd0ff,
+      emissive: 0x66aaff,
+      emissiveIntensity: 1.5,
+      roughness: 0.1,
+      metalness: 0.7
+    })  // Shining Electric Blue
   ];
 
-  const pointLights = [];
-  lightColors.forEach((color) => {
-    const light = new THREE.PointLight(color, 2.5, 60);
-    scene.add(light);
-    pointLights.push(light);
-  });
+  const asteroidGeometries = [
+    new THREE.DodecahedronGeometry(0.8, 1),
+    new THREE.IcosahedronGeometry(0.7, 1),
+    new THREE.OctahedronGeometry(0.9, 1)
+  ];
+
+  const asteroids = [];
+  const asteroidCount = 8;
+
+  for (let i = 0; i < asteroidCount; i++) {
+    const geo = asteroidGeometries[i % asteroidGeometries.length];
+    const mat = asteroidMaterials[i % asteroidMaterials.length];
+    const mesh = new THREE.Mesh(geo, mat);
+
+    // Position randomly along the X and Y bounds
+    const spawnX = -25 - Math.random() * 20; // Spawn offscreen on the left
+    const spawnY = (Math.random() - 0.5) * 16;
+    const spawnZ = (Math.random() - 0.5) * 6; // Random depth
+    mesh.position.set(spawnX, spawnY, spawnZ);
+
+    const scale = Math.random() * 0.6 + 0.5;
+    mesh.scale.set(scale, scale, scale);
+
+    // Fast kinematics properties
+    mesh.userData = {
+      speedX: Math.random() * 0.14 + 0.08, // Fast movement left-to-right
+      speedY: (Math.random() - 0.5) * 0.02,
+      rotX: (Math.random() - 0.5) * 0.08,
+      rotY: (Math.random() - 0.5) * 0.08,
+      rotZ: (Math.random() - 0.5) * 0.04
+    };
+
+    asteroidsGroup.add(mesh);
+    asteroids.push(mesh);
+  }
+
+  // Lights to illuminate the materials and reflect specular rays
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+  scene.add(ambientLight);
+
+  const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  mainLight.position.set(5, 10, 10);
+  scene.add(mainLight);
 
   // Resize handler
   window.addEventListener('resize', () => {
@@ -109,44 +192,50 @@
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
+  // ── 4. Scroll Visibility Logic (Hide on Hero Section) ──
+  function updateCanvasVisibility() {
+    const scrollY = window.scrollY;
+    // Hide when at the top (Hero Page), fade in as soon as user scrolls past 150px
+    if (scrollY > 150) {
+      canvas.style.opacity = '1';
+      canvas.style.visibility = 'visible';
+    } else {
+      canvas.style.opacity = '0';
+      canvas.style.visibility = 'hidden';
+    }
+  }
+
+  window.addEventListener('scroll', updateCanvasVisibility);
+  updateCanvasVisibility(); // initial check
+
   // Animation Loop
   let time = 0;
   function animate() {
     requestAnimationFrame(animate);
-    time += 0.008;
+    time += 0.005;
 
-    // Move lights in overlapping orbital paths for shifting reflections
-    pointLights[0].position.set(Math.sin(time) * 15, Math.cos(time * 0.7) * 10, Math.sin(time * 0.5) * 10);
-    pointLights[1].position.set(Math.cos(time * 0.8) * 15, Math.sin(time * 1.1) * 10, Math.cos(time * 0.3) * 10);
-    pointLights[2].position.set(Math.sin(time * 1.2) * 12, Math.cos(time) * 12, Math.sin(time * 0.8) * 12);
-    pointLights[3].position.set(Math.cos(time * 0.5) * 12, Math.sin(time * 0.9) * 12, Math.cos(time * 1.3) * 12);
+    // Rotate Galaxy slowly
+    galaxy.rotation.z += 0.0012;
 
-    // Update glass objects
-    floatingObjects.forEach((obj) => {
-      // Rotate slowly
-      obj.rotation.x += obj.userData.rotSpeed.x;
-      obj.rotation.y += obj.userData.rotSpeed.y;
-      obj.rotation.z += obj.userData.rotSpeed.z;
+    // Twinkle effect on stars (subtle periodic scaling)
+    starfield.rotation.y += 0.0004;
+    starMat.opacity = 0.75 + Math.sin(time * 8) * 0.15;
 
-      // Translate slowly
-      obj.position.x += obj.userData.velocity.x;
-      obj.position.y += obj.userData.velocity.y;
-      obj.position.z += obj.userData.velocity.z;
+    // Update Fast Asteroids
+    asteroids.forEach((mesh) => {
+      mesh.rotation.x += mesh.userData.rotX;
+      mesh.rotation.y += mesh.userData.rotY;
+      mesh.rotation.z += mesh.userData.rotZ;
 
-      // Bounds wrapping (screen limits at Z=0 range approx x: -22 to +22, y: -13 to +13)
-      const xBound = 22;
-      const yBound = 13;
+      mesh.position.x += mesh.userData.speedX;
+      mesh.position.y += mesh.userData.speedY;
 
-      if (obj.position.x > xBound) {
-        obj.position.x = -xBound;
-      } else if (obj.position.x < -xBound) {
-        obj.position.x = xBound;
-      }
-
-      if (obj.position.y > yBound) {
-        obj.position.y = -yBound;
-      } else if (obj.position.y < -yBound) {
-        obj.position.y = yBound;
+      // Wrap back to the left side when moving past the right edge
+      const wrapLimit = 25;
+      if (mesh.position.x > wrapLimit) {
+        mesh.position.x = -wrapLimit - Math.random() * 15;
+        mesh.position.y = (Math.random() - 0.5) * 16;
+        mesh.userData.speedX = Math.random() * 0.14 + 0.08; // new speed
       }
     });
 
