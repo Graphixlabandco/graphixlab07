@@ -862,7 +862,11 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       showToast(`Logged in successfully! Welcome, ${data.user.user_metadata?.display_name || data.user.email.split('@')[0]}!`);
     } catch (err) {
       console.error('Login error:', err.message);
-      showToast(err.message || "Invalid email or password!");
+      if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+        showToast("Please confirm your email address by clicking the link sent to your inbox!");
+      } else {
+        showToast(err.message || "Invalid email or password!");
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
