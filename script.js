@@ -900,7 +900,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('profileName').value.trim();
-    const newPassword = document.getElementById('profilePassword').value;
+    const newPassword = document.getElementById('profilePassword').value.trim();
     
     if (!supabaseClient) return;
 
@@ -913,13 +913,18 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     submitBtn.innerHTML = 'Saving...';
 
     try {
-      const { error } = await supabaseClient.auth.updateUser({
+      const updateData = {
         data: {
           display_name: name,
           avatar_seed: avatarSeed
-        },
-        password: newPassword || undefined
-      });
+        }
+      };
+
+      if (newPassword !== "") {
+        updateData.password = newPassword;
+      }
+
+      const { error } = await supabaseClient.auth.updateUser(updateData);
 
       if (error) throw error;
 
