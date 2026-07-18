@@ -1891,4 +1891,20 @@ img { max-width: 100%; display: block; }
   margin: 0 auto;
 }
 
+/* ── Circular Logo Styling ── */
+.logo-img-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+  vertical-align: middle;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+}
 
+.footer-brand .logo-img-fallback {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.5rem;
+}
