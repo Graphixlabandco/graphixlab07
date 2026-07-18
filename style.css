@@ -1898,6 +1898,201 @@ img { max-width: 100%; display: block; }
   border-radius: 50%;
   object-fit: cover;
   display: inline-block;
+  position: absolute;
+  right: 75px;
+  top: 50%;
+  transform: translateY(-50%) translateX(10px);
+  background: rgba(15, 15, 25, 0.85);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px);
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.chat-float-btn:hover .chat-tooltip {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.chat-panel {
+  position: fixed;
+  bottom: 6.5rem;
+  right: 2rem;
+  z-index: 1000;
+  width: 360px;
+  height: 480px;
+  max-width: 90vw;
+  max-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.65);
+  transform: translateY(20px);
+  opacity: 0;
+  visibility: hidden;
+  transition: transform 0.4s var(--ease-out-expo), opacity 0.4s, visibility 0.4s;
+}
+
+.chat-panel.active {
+  transform: translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.chat-header {
+  padding: 1rem 1.2rem;
+  background: rgba(13, 13, 20, 0.6);
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.chat-agent-info {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.chat-agent-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.chat-agent-info h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.chat-agent-info span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.chat-close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.chat-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.chat-body {
+  flex: 1;
+  padding: 1.2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.chat-message {
+  max-width: 80%;
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.chat-message.bot {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--glass-border);
+  color: var(--text-primary);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.chat-message.user {
+  background: var(--gradient-primary);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 15px rgba(130, 100, 250, 0.2);
+}
+
+.chat-input-area {
+  padding: 0.8rem 1.2rem;
+  background: rgba(13, 13, 20, 0.4);
+  border-top: 1px solid var(--glass-border);
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.chat-input-area input:focus {
+  outline: none;
+  border-color: var(--pastel-lavender);
+}
+
+.chat-input-area button {
+  background: none;
+  border: none;
+  color: var(--pastel-lavender);
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-input-area button:hover {
+  transform: scale(1.1);
+}
+
+/* ── Empty Reviews State Carousel Adjustment ── */
+.empty-reviews-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  width: 100%;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  background: rgba(255, 255, 255, 0.01);
+  border: 1.5px dashed var(--glass-border);
+  border-radius: var(--card-radius);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ── Circular Logo Styling ── */
+.logo-img-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
   vertical-align: middle;
   border: 1px solid var(--glass-border);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
@@ -1907,4 +2102,33 @@ img { max-width: 100%; display: block; }
   width: 44px;
   height: 44px;
   margin-bottom: 0.5rem;
+}
+
+/* ── Password Input Wrapper & Eye Toggle ── */
+.password-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  padding-right: 3rem !important; /* Make sure text doesn't overlap eye icon */
+}
+
+.password-toggle-btn {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  transform: translateY(-50%);
+  z-index: 5;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s;
+}
+
+.password-toggle-btn:hover {
+  color: var(--pastel-lavender);
 }

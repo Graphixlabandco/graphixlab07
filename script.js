@@ -644,8 +644,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 })();
 
 
-// ── Simulated Local Authentication Manager ──
-(function initSimulatedAuth() {
+// ── Supabase Live Authentication Manager ──
+(function initSupabaseAuth() {
   const authBtn = document.getElementById('authBtn');
   const profileBtn = document.getElementById('profileBtn');
   const navProfilePic = document.getElementById('navProfilePic');
@@ -668,30 +668,6 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   const profileForm = document.getElementById('profileForm');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  // Load existing accounts or initialize
-  function getAccounts() {
-    const stored = localStorage.getItem('graphixlab_profiles');
-    return stored ? JSON.parse(stored) : [];
-  }
-
-  function saveAccounts(accounts) {
-    localStorage.setItem('graphixlab_profiles', JSON.stringify(accounts));
-  }
-
-  function getActiveUser() {
-    const active = localStorage.getItem('graphixlab_active_user');
-    return active ? JSON.parse(active) : null;
-  }
-
-  function setActiveUser(user) {
-    if (user) {
-      localStorage.setItem('graphixlab_active_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('graphixlab_active_user');
-    }
-    updateAuthUI();
-  }
-
   function showToast(message) {
     let toast = document.querySelector('.toast');
     if (!toast) {
@@ -704,18 +680,43 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  function updateAuthUI() {
-    const activeUser = getActiveUser();
-    if (activeUser) {
+  // Handle password visibility toggle click
+  document.querySelectorAll('.password-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const wrapper = btn.closest('.password-input-wrapper');
+      const input = wrapper.querySelector('input');
+      const eyeSlash = btn.querySelector('.eye-slash');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeSlash) eyeSlash.style.display = 'block';
+      } else {
+        input.type = 'password';
+        if (eyeSlash) eyeSlash.style.display = 'none';
+      }
+    });
+  });
+
+  // Update navbar trigger UI
+  function updateAuthUI(user) {
+    if (user) {
       authBtn.style.display = 'none';
       profileBtn.style.display = 'inline-flex';
       
-      const seed = activeUser.avatarSeed || 'Riya';
+      const seed = user.user_metadata?.avatar_seed || 'Riya';
       navProfilePic.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
     } else {
       authBtn.style.display = 'inline-flex';
       profileBtn.style.display = 'none';
     }
+  }
+
+  // Set up Supabase Auth state listener
+  if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      const user = session?.user || null;
+      updateAuthUI(user);
+    });
   }
 
   // Event Listeners for Modal Toggles
@@ -725,25 +726,26 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     signupModalContent.style.display = 'none';
   });
 
-  profileBtn.addEventListener('click', () => {
-    const activeUser = getActiveUser();
-    if (!activeUser) return;
+  profileBtn.addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) return;
     
     // Fill forms
-    document.getElementById('profileName').value = activeUser.name || '';
-    document.getElementById('profileEmailDisplay').value = activeUser.email || '';
+    document.getElementById('profileName').value = user.user_metadata?.display_name || user.email.split('@')[0];
+    document.getElementById('profileEmailDisplay').value = user.email || '';
     document.getElementById('profilePassword').value = '';
     
     // Select correct avatar option
     document.querySelectorAll('.avatar-opt').forEach(opt => {
-      if (opt.getAttribute('data-seed') === activeUser.avatarSeed) {
+      if (opt.getAttribute('data-seed') === user.user_metadata?.avatar_seed) {
         opt.classList.add('active');
       } else {
         opt.classList.remove('active');
       }
     });
 
-    document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${activeUser.avatarSeed || 'Riya'}`;
+    document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${user.user_metadata?.avatar_seed || 'Riya'}`;
     profileModal.classList.add('active');
   });
 
@@ -777,8 +779,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     if (e.target === profileModal) closeAllModals();
   });
 
-  // Handle Signup
-  signupForm.addEventListener('submit', (e) => {
+  // Handle Signup (Live Supabase)
+  signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
@@ -789,47 +791,82 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       return;
     }
 
-    const accounts = getAccounts();
-    const exists = accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase());
-    if (exists) {
-      showToast("An account with this email already exists!");
+    if (!supabaseClient) {
+      showToast("Supabase is not initialized!");
       return;
     }
 
-    const newAcc = {
-      email: email,
-      password: password,
-      name: email.split('@')[0],
-      avatarSeed: 'Riya'
-    };
+    const submitBtn = signupForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Signing up...';
 
-    accounts.push(newAcc);
-    saveAccounts(accounts);
-    setActiveUser(newAcc);
-    
-    closeAllModals();
-    signupForm.reset();
-    showToast("Account created successfully! Welcome to Graphix Lab. 🎉");
+    try {
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            display_name: email.split('@')[0],
+            avatar_seed: 'Riya'
+          }
+        }
+      });
+
+      if (error) throw error;
+
+      closeAllModals();
+      signupForm.reset();
+      
+      // If user requires email verification:
+      if (data?.user && data.user.identities && data.user.identities.length === 0) {
+        showToast("Account exists or verification required! Check your inbox.");
+      } else {
+        showToast("Account created successfully! Check your email to verify. ✉️");
+      }
+    } catch (err) {
+      console.error('Signup error:', err.message);
+      showToast(err.message || "Failed to create account.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   });
 
-  // Handle Login
-  loginForm.addEventListener('submit', (e) => {
+  // Handle Login (Live Supabase)
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
 
-    const accounts = getAccounts();
-    const user = accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase() && acc.password === password);
-    
-    if (!user) {
-      showToast("Invalid email or password!");
+    if (!supabaseClient) {
+      showToast("Supabase is not initialized!");
       return;
     }
 
-    setActiveUser(user);
-    closeAllModals();
-    loginForm.reset();
-    showToast(`Logged in successfully. Welcome back, ${user.name}!`);
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Logging in...';
+
+    try {
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+
+      closeAllModals();
+      loginForm.reset();
+      showToast(`Logged in successfully! Welcome, ${data.user.user_metadata?.display_name || data.user.email.split('@')[0]}!`);
+    } catch (err) {
+      console.error('Login error:', err.message);
+      showToast(err.message || "Invalid email or password!");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   });
 
   // Avatar Selection logic
@@ -842,44 +879,63 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     });
   });
 
-  // Handle Profile Update
-  profileForm.addEventListener('submit', (e) => {
+  // Handle Profile Update (Live Supabase)
+  profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name = document.getElementById('profileName').value.trim();
     const newPassword = document.getElementById('profilePassword').value;
-    const activeUser = getActiveUser();
     
-    if (!activeUser) return;
+    if (!supabaseClient) return;
 
     const selectedAvatar = document.querySelector('.avatar-opt.active');
     const avatarSeed = selectedAvatar ? selectedAvatar.getAttribute('data-seed') : 'Riya';
 
-    const accounts = getAccounts();
-    const index = accounts.findIndex(acc => acc.email.toLowerCase() === activeUser.email.toLowerCase());
+    const submitBtn = profileForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Saving...';
 
-    if (index !== -1) {
-      accounts[index].name = name;
-      accounts[index].avatarSeed = avatarSeed;
-      if (newPassword) {
-        accounts[index].password = newPassword;
-      }
-      saveAccounts(accounts);
-      setActiveUser(accounts[index]);
+    try {
+      const { error } = await supabaseClient.auth.updateUser({
+        data: {
+          display_name: name,
+          avatar_seed: avatarSeed
+        },
+        password: newPassword || undefined
+      });
+
+      if (error) throw error;
+
+      closeAllModals();
+      showToast("Profile settings saved successfully! ✨");
+    } catch (err) {
+      console.error('Profile update error:', err.message);
+      showToast(err.message || "Failed to update profile settings.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
     }
-
-    closeAllModals();
-    showToast("Profile settings saved! ✨");
   });
 
-  // Handle Logout
-  logoutBtn.addEventListener('click', () => {
-    setActiveUser(null);
-    closeAllModals();
-    showToast("Logged out successfully.");
+  // Handle Logout (Live Supabase)
+  logoutBtn.addEventListener('click', async () => {
+    if (!supabaseClient) return;
+    try {
+      const { error } = await supabaseClient.auth.signOut();
+      if (error) throw error;
+      closeAllModals();
+      showToast("Logged out successfully.");
+    } catch (err) {
+      console.error('Logout error:', err.message);
+      showToast("Failed to sign out.");
+    }
   });
 
-  // Initial check
-  updateAuthUI();
+  // Trigger initial UI sync
+  const initialUser = supabaseClient ? supabaseClient.auth.getUser() : null;
+  if (initialUser && typeof initialUser.then === 'function') {
+    initialUser.then(({ data: { user } }) => updateAuthUI(user));
+  }
 })();
 
 
