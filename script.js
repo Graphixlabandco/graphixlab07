@@ -376,10 +376,10 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     }
 
     // EmailJS configurations (User can customize these values in script.js when ready)
-    const EMAILJS_PUBLIC_KEY = ""; // Put your EmailJS Public Key here
-    const EMAILJS_SERVICE_ID = ""; // Put your EmailJS Service ID here
-    const EMAILJS_TEMPLATE_CLIENT = ""; // Template ID for customer confirmation
-    const EMAILJS_TEMPLATE_ADMIN = ""; // Template ID for admin notification
+    const EMAILJS_PUBLIC_KEY = "k2i_99oMeHEmqiILD"; // Put your EmailJS Public Key here
+    const EMAILJS_SERVICE_ID = "service_pv3yvv6"; // Put your EmailJS Service ID here
+    const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04"; // Template ID for customer confirmation
+    const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2"; // Template ID for admin notification
 
     if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID) {
       console.warn("EmailJS keys are empty. Configure EmailJS variables in script.js to trigger customer and admin email confirmations.");
