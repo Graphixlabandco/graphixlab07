@@ -1,7 +1,7 @@
 // ── Supabase Configuration & Initialization ──
 const SUPABASE_URL = "https://xjpirlckvvqjoorzheq.supabase.co";
 const SUPABASE_KEY = "sb_publishable_jhU2211MCzw4L_AEqyp2rw_8i90W5cA";
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
@@ -387,8 +387,8 @@ const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SU
       submitBtn.innerHTML = 'Booking...';
 
       try {
-        if (supabase) {
-          const { error } = await supabase
+        if (supabaseClient) {
+          const { error } = await supabaseClient
             .from('bookings')
             .insert([{
               service,
@@ -504,12 +504,12 @@ const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SU
   }
 
   async function fetchReviews() {
-    if (!supabase) {
+    if (!supabaseClient) {
       return getLocalReviews();
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await supabaseClient
         .from('reviews')
         .select('*')
         .eq('approved', true)
@@ -603,8 +603,8 @@ const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SU
     submitBtn.innerHTML = 'Submitting...';
 
     try {
-      if (supabase) {
-        const { error } = await supabase
+      if (supabaseClient) {
+        const { error } = await supabaseClient
           .from('reviews')
           .insert([{ name, comment, rating, approved: true }]);
 
