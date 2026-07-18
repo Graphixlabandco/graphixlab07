@@ -22,25 +22,20 @@
         <span></span><span></span><span></span>
       </button>
       <a href="#hero" class="nav-logo">
-        <span class="logo-icon">G</span>
+        <img src="logo.png" alt="Graphix Lab" class="logo-img-fallback" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" style="height: 34px; width: auto; object-fit: contain; display: inline-block;">
+        <span class="logo-icon" style="display: none;">G</span>
         <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
       </a>
     </div>
     <div class="nav-right">
-      <button class="search-btn" id="searchBtn" aria-label="Search">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
+      <div id="authContainer">
+        <button class="auth-trigger-btn glass-btn" id="authBtn">Login / Signup</button>
+        <button class="profile-trigger-btn" id="profileBtn" style="display: none;" aria-label="User Profile">
+          <img src="" id="navProfilePic" alt="Profile" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=user';">
+        </button>
+      </div>
     </div>
   </nav>
-
-  <!-- Search Overlay -->
-  <div class="search-overlay" id="searchOverlay">
-    <div class="search-overlay-inner glass-panel">
-      <input type="text" class="search-input" placeholder="Search services, pages…" id="searchInput" />
-      <button class="search-close" id="searchClose" aria-label="Close search">&times;</button>
-      <div class="search-results" id="searchResults"></div>
-    </div>
-  </div>
 
   <!-- Mobile Menu Drawer -->
   <div class="mobile-menu" id="mobileMenu">
@@ -101,121 +96,109 @@
     <div class="services-grid">
 
       <!-- Card 1 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="logo">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
             </div>
             <h3 class="card-title">Logo Designs</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Logo Designs</h3>
             <p class="card-back-desc">We craft distinctive, memorable logos that capture your brand's identity at a glance. Every mark is built with precision — from concept sketches to vector-perfect files ready for print, digital, and beyond.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
 
       <!-- Card 2 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="branding">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
             </div>
             <h3 class="card-title">Branding / Landing Page</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Branding / Landing Page</h3>
             <p class="card-back-desc">From cohesive brand kits to high-converting landing pages, we design complete visual identities that speak your brand language. Every colour, font, and layout is intentionally chosen to resonate with your audience.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
 
       <!-- Card 3 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="video">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
             </div>
             <h3 class="card-title">Short Video Editing</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Short Video Editing</h3>
             <p class="card-back-desc">We transform raw footage into scroll-stopping short videos with cinematic transitions, motion graphics, and sound design. Optimised for Instagram Reels, YouTube Shorts, and TikTok to maximise your reach.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
 
       <!-- Card 4 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="thumbnails">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
             </div>
             <h3 class="card-title">Thumbnails / Cover Pages</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Thumbnails / Cover Pages</h3>
             <p class="card-back-desc">First impressions matter. We design bold, click-worthy thumbnails and polished cover pages that grab attention in crowded feeds. Each design is data-informed and visually engineered for maximum engagement.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
 
       <!-- Card 5 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="prototypes">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             </div>
             <h3 class="card-title">Prototypes / 3D Model Structure</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Prototypes / 3D Models</h3>
             <p class="card-back-desc">Bring your ideas to life before production. We build interactive prototypes and photorealistic 3D model structures that let you visualise, iterate, and present your product with confidence — from concept to reality.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
 
       <!-- Card 6 -->
-      <div class="flip-card" data-animate="fade-up">
+      <div class="flip-card" data-animate="fade-up" data-service="vibecoding">
         <div class="flip-card-inner">
           <div class="flip-card-front glass-card">
-            <span class="card-tap-hint">Tap</span>
             <div class="card-icon">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" y1="4" x2="10" y2="20"/></svg>
             </div>
             <h3 class="card-title">Vibe Coding Websites</h3>
+            <button class="card-flip-btn glass-btn">Learn More</button>
           </div>
           <div class="flip-card-back glass-card">
             <h3 class="card-back-title">Vibe Coding Websites</h3>
             <p class="card-back-desc">We build modern, aesthetic websites that feel alive. Smooth animations, responsive layouts, and clean code — every site we ship is a seamless blend of design artistry and rock-solid development. Your vision, our code.</p>
-            <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="card-learn-more">Learn More
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            <button class="card-book-btn submit-btn">Book This Service Now</button>
           </div>
         </div>
       </div>
@@ -264,6 +247,52 @@
     </div>
   </section>
 
+  <!-- ══════════════ BOOKING SECTION ══════════════ -->
+  <section class="booking" id="booking">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-tag">Direct Commission</span>
+      <h2 class="section-title">Start Your Project</h2>
+      <p class="section-subtitle">Define your design needs and our combination of AI and human intelligence will build it.</p>
+    </div>
+    <div class="booking-wrapper" data-animate="fade-up">
+      <form class="booking-form glass-panel" id="bookingForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="bookingService">Select Design Service</label>
+            <select id="bookingService" required>
+              <option value="" disabled selected>Select a service...</option>
+              <option value="logo">Logo Designs</option>
+              <option value="branding">Branding / Landing Page</option>
+              <option value="video">Short Video Editing</option>
+              <option value="thumbnails">Thumbnails / Cover Pages</option>
+              <option value="prototypes">Prototypes / 3D Model Structure</option>
+              <option value="vibecoding">Vibe Coding Websites</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="bookingBrief">Project Description & Requirements</label>
+            <textarea id="bookingBrief" rows="4" placeholder="Briefly describe your design needs, visual styles, color preferences, and functional goals..." required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="bookingName">Your Name</label>
+            <input type="text" id="bookingName" placeholder="John Doe" required />
+          </div>
+          <div class="form-group">
+            <label for="bookingEmail">Email Address</label>
+            <input type="email" id="bookingEmail" placeholder="you@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="bookingPhone">Contact Number</label>
+            <input type="tel" id="bookingPhone" placeholder="+91 70131 28881" required />
+          </div>
+        </div>
+        <button type="submit" class="submit-btn" style="margin-top: 1rem; align-self: center;">Book a Request
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </form>
+    </div>
+  </section>
+
   <!-- ══════════════ REVIEWS SECTION ══════════════ -->
   <section class="reviews" id="reviews">
     <div class="section-header" data-animate="fade-up">
@@ -309,9 +338,10 @@
     <footer class="footer" data-animate="fade-up">
       <div class="footer-inner">
         <div class="footer-brand">
-          <span class="logo-icon">G</span>
+          <img src="logo.png" alt="Graphix Lab" class="logo-img-fallback" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';" style="height: 40px; width: auto; object-fit: contain; display: inline-block; margin-bottom: 0.3rem;">
+          <span class="logo-icon" style="display: none; margin-bottom: 0.3rem;">G</span>
           <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
-          <p class="footer-tagline">Engineering Experiences</p>
+          <p class="footer-tagline">Designing Experiences</p>
         </div>
         <div class="footer-links">
           <h4>Connect With Us</h4>
@@ -341,11 +371,131 @@
     </footer>
   </section>
 
-  <!-- ══════════════ FLOATING WHATSAPP BUTTON ══════════════ -->
-  <a href="https://wa.me/message/MTORVP6YP2XUP1" target="_blank" rel="noopener" class="whatsapp-float" aria-label="Chat on WhatsApp">
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-    <span class="wa-tooltip">Chat with us</span>
-  </a>
+  <!-- ══════════════ AI CHATBOT ASSISTANT ══════════════ -->
+  <button class="chat-float-btn" id="chatFloatBtn" aria-label="Chat Assist">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span class="chat-tooltip">Riya Assist</span>
+  </button>
+
+  <div class="chat-panel glass-panel" id="chatPanel">
+    <div class="chat-header">
+      <div class="chat-agent-info">
+        <div class="chat-agent-avatar">R</div>
+        <div>
+          <h4>Riya</h4>
+          <span>Graphix Lab Assist</span>
+        </div>
+      </div>
+      <button class="chat-close-btn" id="chatCloseBtn">&times;</button>
+    </div>
+    <div class="chat-body" id="chatBody">
+      <div class="chat-message bot">
+        Hello! I'm Riya, your Graphix Lab design assistant. Ask me anything about our design services, custom commissions, or pricing options!
+      </div>
+    </div>
+    <form class="chat-input-area" id="chatInputForm">
+      <input type="text" id="chatMessageInput" placeholder="Type a question..." autocomplete="off" required>
+      <button type="submit" aria-label="Send">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+      </button>
+    </form>
+  </div>
+
+  <!-- ══════════════ AUTH MODALS ══════════════ -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-content glass-panel" id="loginModalContent">
+      <button class="modal-close" id="loginCloseBtn">&times;</button>
+      <h2>Welcome Back</h2>
+      <p class="modal-subtitle">Log in to manage your active booking commissions</p>
+      <form id="loginForm" class="modal-form">
+        <div class="form-group">
+          <label for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="submit-btn" style="width: 100%;">Login</button>
+      </form>
+      <p class="modal-switch">Don't have an account? <a href="#" id="switchToSignup">Sign up</a></p>
+    </div>
+
+    <div class="modal-content glass-panel" id="signupModalContent" style="display: none;">
+      <button class="modal-close" id="signupCloseBtn">&times;</button>
+      <h2>Create Account</h2>
+      <p class="modal-subtitle">Sign up to commission custom branding and vibe websites</p>
+      <form id="signupForm" class="modal-form">
+        <div class="form-group">
+          <label for="signupEmail">Email Address</label>
+          <input type="email" id="signupEmail" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <input type="password" id="signupPassword" placeholder="••••••••" required>
+        </div>
+        <div class="form-group">
+          <label for="signupConfirmPassword">Confirm Password</label>
+          <input type="password" id="signupConfirmPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="submit-btn" style="width: 100%;">Create Account</button>
+      </form>
+      <p class="modal-switch">Already have an account? <a href="#" id="switchToLogin">Log in</a></p>
+    </div>
+  </div>
+
+  <!-- ══════════════ PROFILE MODAL ══════════════ -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-content glass-panel">
+      <button class="modal-close" id="profileCloseBtn">&times;</button>
+      <h2>Your Account</h2>
+      <p class="modal-subtitle">Manage details or register new profiles</p>
+      
+      <div class="profile-pic-section">
+        <div class="profile-avatar-large">
+          <img src="" id="profilePicLarge" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=user';">
+        </div>
+        <div class="avatar-selector">
+          <label>Select Avatar Seed:</label>
+          <div class="avatar-options">
+            <button type="button" class="avatar-opt active" data-seed="Riya">🤖</button>
+            <button type="button" class="avatar-opt" data-seed="Creativity">🎨</button>
+            <button type="button" class="avatar-opt" data-seed="Design">💎</button>
+            <button type="button" class="avatar-opt" data-seed="Engine">⚡</button>
+          </div>
+        </div>
+      </div>
+
+      <form id="profileForm" class="modal-form">
+        <div class="form-group">
+          <label for="profileName">Display Name</label>
+          <input type="text" id="profileName" placeholder="Client Name" required>
+        </div>
+        <div class="form-group">
+          <label for="profileEmailDisplay">Logged-in Email</label>
+          <input type="email" id="profileEmailDisplay" disabled style="opacity: 0.6;">
+        </div>
+        <div class="form-group">
+          <label for="profilePassword">New Password</label>
+          <input type="password" id="profilePassword" placeholder="Change Password">
+        </div>
+        <button type="submit" class="submit-btn" style="width: 100%;">Save Changes</button>
+      </form>
+
+      <div class="profile-actions-divider" style="margin: 1.5rem 0; border-top: 1px solid var(--glass-border);"></div>
+      <button class="submit-btn logout-btn" id="logoutBtn" style="background: var(--gradient-accent); color: #fff; width: 100%;">Log Out</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ SUCCESS MODAL ══════════════ -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-content glass-panel" style="text-align: center; max-width: 420px; padding: 2.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
+      <h2 style="font-family: var(--font-display); font-weight: 800; margin-bottom: 0.5rem;">Congratulations!</h2>
+      <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">You have successfully booked our service.</p>
+      <button class="submit-btn" id="successCloseBtn" style="min-width: 120px;">Done</button>
+    </div>
+  </div>
 
   <!-- Three.js via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>

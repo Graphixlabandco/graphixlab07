@@ -304,95 +304,84 @@
 })();
 
 
-// ── Search Overlay ──
-(function initSearch() {
-  const searchBtn = document.getElementById('searchBtn');
-  const searchOverlay = document.getElementById('searchOverlay');
-  const searchClose = document.getElementById('searchClose');
-  const searchInput = document.getElementById('searchInput');
-  const searchResults = document.getElementById('searchResults');
-
-  const searchableItems = [
-    { title: 'Home', href: '#hero', keywords: 'home hero welcome' },
-    { title: 'Logo Designs', href: '#services', keywords: 'logo brand mark icon' },
-    { title: 'Branding / Landing Page', href: '#services', keywords: 'branding landing page identity' },
-    { title: 'Short Video Editing', href: '#services', keywords: 'video editing reels shorts' },
-    { title: 'Thumbnails / Cover Pages', href: '#services', keywords: 'thumbnail cover youtube' },
-    { title: 'Prototypes / 3D Model Structure', href: '#services', keywords: 'prototype 3d model mockup' },
-    { title: 'Vibe Coding Websites', href: '#services', keywords: 'website code development web' },
-    { title: 'About Us', href: '#about', keywords: 'about why choose trust ai' },
-    { title: 'Reviews', href: '#reviews', keywords: 'review testimonial rating feedback' },
-    { title: 'Contact', href: '#reviews', keywords: 'contact email phone whatsapp instagram' }
-  ];
-
-  function openSearch() {
-    searchOverlay.classList.add('active');
-    setTimeout(() => searchInput.focus(), 100);
-  }
-
-  function closeSearch() {
-    searchOverlay.classList.remove('active');
-    searchInput.value = '';
-    searchResults.innerHTML = '';
-  }
-
-  searchBtn.addEventListener('click', openSearch);
-  searchClose.addEventListener('click', closeSearch);
-  searchOverlay.addEventListener('click', (e) => {
-    if (e.target === searchOverlay) closeSearch();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeSearch();
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
-  });
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase().trim();
-    searchResults.innerHTML = '';
-
-    if (!query) return;
-
-    const matches = searchableItems.filter(item =>
-      item.title.toLowerCase().includes(query) || item.keywords.includes(query)
-    );
-
-    matches.forEach(item => {
-      const el = document.createElement('a');
-      el.href = item.href;
-      el.className = 'search-result-item';
-      el.textContent = item.title;
-      el.addEventListener('click', closeSearch);
-      searchResults.appendChild(el);
-    });
-  });
-})();
-
-
-// ── Flip Cards ──
-(function initFlipCards() {
+// ── Flip Cards & Booking Handlers ──
+(function initFlipCardsAndBooking() {
   const cards = document.querySelectorAll('.flip-card');
-  const isTouchDevice = window.matchMedia('(hover: none)').matches || window.innerWidth < 769;
+  const bookingServiceSelect = document.getElementById('bookingService');
 
-  if (isTouchDevice) {
-    // Mobile: auto-flip when card reaches the center of the viewport
-    const flipObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('flipped');
-        } else {
-          entry.target.classList.remove('flipped');
+  // Manual flipping via the "Learn More" buttons
+  cards.forEach(card => {
+    const flipBtn = card.querySelector('.card-flip-btn');
+    const inner = card.querySelector('.flip-card-inner');
+
+    if (flipBtn && inner) {
+      flipBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Unflip all other cards first to keep layout clean
+        cards.forEach(c => {
+          if (c !== card) c.classList.remove('flipped');
+        });
+        card.classList.toggle('flipped');
+      });
+    }
+
+    // Allow tapping on the back card (except the booking button itself) to flip it back to the front
+    const backCard = card.querySelector('.flip-card-back');
+    if (backCard && inner) {
+      backCard.addEventListener('click', (e) => {
+        if (e.target.classList.contains('card-book-btn')) return;
+        card.classList.remove('flipped');
+      });
+    }
+
+    // "Book This Service Now" click handler
+    const bookBtn = card.querySelector('.card-book-btn');
+    if (bookBtn) {
+      bookBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const serviceId = card.getAttribute('data-service');
+        
+        // Pre-fill selection dropdown
+        if (bookingServiceSelect && serviceId) {
+          bookingServiceSelect.value = serviceId;
+        }
+
+        // Flip card back to front
+        card.classList.remove('flipped');
+
+        // Scroll smoothly to booking section
+        const bookingSection = document.getElementById('booking');
+        if (bookingSection) {
+          bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
-    }, {
-      // rootMargin: shrink the observation zone to roughly the middle 30% of the screen
-      rootMargin: '-35% 0px -35% 0px',
-      threshold: 0.3
-    });
+    }
+  });
 
-    cards.forEach(card => flipObserver.observe(card));
+  // Service booking form handler
+  const bookingForm = document.getElementById('bookingForm');
+  const successModal = document.getElementById('successModal');
+  const successCloseBtn = document.getElementById('successCloseBtn');
+
+  if (bookingForm) {
+    bookingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Clear inputs
+      bookingForm.reset();
+
+      // Show success modal
+      if (successModal) {
+        successModal.classList.add('active');
+      }
+    });
   }
-  // Desktop: hover flip is handled entirely by CSS (no JS needed)
+
+  if (successCloseBtn && successModal) {
+    successCloseBtn.addEventListener('click', () => {
+      successModal.classList.remove('active');
+    });
+  }
 })();
 
 
@@ -419,6 +408,8 @@
 (function initStarRating() {
   const starRating = document.getElementById('starRating');
   const ratingValue = document.getElementById('ratingValue');
+  if (!starRating || !ratingValue) return;
+
   const stars = starRating.querySelectorAll('.star');
   let currentRating = 0;
 
@@ -458,18 +449,12 @@
 (function initReviews() {
   const form = document.getElementById('reviewForm');
   const carousel = document.getElementById('reviewsCarousel');
-
-  // Default sample reviews
-  const defaultReviews = [
-    { name: 'Arjun Patel', comment: 'Graphix Lab transformed our brand identity completely. The logo and landing page they designed exceeded all our expectations. Pure artistry!', rating: 5 },
-    { name: 'Sneha Reddy', comment: 'The video editing team delivered scroll-stopping reels for our product launch. Professional, creative, and incredibly fast turnaround.', rating: 5 },
-    { name: 'Vikram Sharma', comment: 'Their 3D prototyping service saved us months of development time. Seeing our product in realistic renders before production was game-changing.', rating: 4 },
-    { name: 'Priya Menon', comment: 'Outstanding thumbnail designs for my YouTube channel. My click-through rate jumped by 40% after switching to their designs. Highly recommend!', rating: 5 }
-  ];
+  if (!form || !carousel) return;
 
   function getReviews() {
     const stored = localStorage.getItem('graphixlab_reviews');
-    return stored ? JSON.parse(stored) : defaultReviews;
+    // Start with blank/empty array as we are doing backend database setup next
+    return stored ? JSON.parse(stored) : [];
   }
 
   function saveReviews(reviews) {
@@ -479,6 +464,15 @@
   function renderReviews() {
     const reviews = getReviews();
     carousel.innerHTML = '';
+
+    if (reviews.length === 0) {
+      carousel.innerHTML = `
+        <div class="empty-reviews-message">
+          <p>No reviews yet. Be the first to share your experience after registering!</p>
+        </div>
+      `;
+      return;
+    }
 
     reviews.forEach(review => {
       const card = document.createElement('div');
@@ -509,7 +503,6 @@
     return div.innerHTML;
   }
 
-  // Toast notification
   function showToast(message) {
     let toast = document.querySelector('.toast');
     if (!toast) {
@@ -522,7 +515,6 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  // Form submission
   form.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -548,9 +540,8 @@
       s.classList.remove('hover');
     });
 
-    showToast('Thank you for your review! ✨');
+    showToast('Thank you for your review! It will sync to Supabase once live. ✨');
 
-    // Scroll carousel to new review
     setTimeout(() => {
       carousel.scrollTo({
         left: carousel.scrollWidth,
@@ -559,8 +550,358 @@
     }, 300);
   });
 
-  // Initial render
   renderReviews();
+})();
+
+
+// ── Simulated Local Authentication Manager ──
+(function initSimulatedAuth() {
+  const authBtn = document.getElementById('authBtn');
+  const profileBtn = document.getElementById('profileBtn');
+  const navProfilePic = document.getElementById('navProfilePic');
+  
+  const authModal = document.getElementById('authModal');
+  const loginModalContent = document.getElementById('loginModalContent');
+  const signupModalContent = document.getElementById('signupModalContent');
+  
+  const profileModal = document.getElementById('profileModal');
+  
+  const switchToSignup = document.getElementById('switchToSignup');
+  const switchToLogin = document.getElementById('switchToLogin');
+  
+  const loginCloseBtn = document.getElementById('loginCloseBtn');
+  const signupCloseBtn = document.getElementById('signupCloseBtn');
+  const profileCloseBtn = document.getElementById('profileCloseBtn');
+  
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const profileForm = document.getElementById('profileForm');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // Load existing accounts or initialize
+  function getAccounts() {
+    const stored = localStorage.getItem('graphixlab_profiles');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  function saveAccounts(accounts) {
+    localStorage.setItem('graphixlab_profiles', JSON.stringify(accounts));
+  }
+
+  function getActiveUser() {
+    const active = localStorage.getItem('graphixlab_active_user');
+    return active ? JSON.parse(active) : null;
+  }
+
+  function setActiveUser(user) {
+    if (user) {
+      localStorage.setItem('graphixlab_active_user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('graphixlab_active_user');
+    }
+    updateAuthUI();
+  }
+
+  function showToast(message) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  function updateAuthUI() {
+    const activeUser = getActiveUser();
+    if (activeUser) {
+      authBtn.style.display = 'none';
+      profileBtn.style.display = 'inline-flex';
+      
+      const seed = activeUser.avatarSeed || 'Riya';
+      navProfilePic.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+    } else {
+      authBtn.style.display = 'inline-flex';
+      profileBtn.style.display = 'none';
+    }
+  }
+
+  // Event Listeners for Modal Toggles
+  authBtn.addEventListener('click', () => {
+    authModal.classList.add('active');
+    loginModalContent.style.display = 'block';
+    signupModalContent.style.display = 'none';
+  });
+
+  profileBtn.addEventListener('click', () => {
+    const activeUser = getActiveUser();
+    if (!activeUser) return;
+    
+    // Fill forms
+    document.getElementById('profileName').value = activeUser.name || '';
+    document.getElementById('profileEmailDisplay').value = activeUser.email || '';
+    document.getElementById('profilePassword').value = '';
+    
+    // Select correct avatar option
+    document.querySelectorAll('.avatar-opt').forEach(opt => {
+      if (opt.getAttribute('data-seed') === activeUser.avatarSeed) {
+        opt.classList.add('active');
+      } else {
+        opt.classList.remove('active');
+      }
+    });
+
+    document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${activeUser.avatarSeed || 'Riya'}`;
+    profileModal.classList.add('active');
+  });
+
+  // Switch between Login and Signup modals
+  switchToSignup.addEventListener('click', (e) => {
+    e.preventDefault();
+    loginModalContent.style.display = 'none';
+    signupModalContent.style.display = 'block';
+  });
+
+  switchToLogin.addEventListener('click', (e) => {
+    e.preventDefault();
+    signupModalContent.style.display = 'none';
+    loginModalContent.style.display = 'block';
+  });
+
+  // Close modals
+  const closeAllModals = () => {
+    authModal.classList.remove('active');
+    profileModal.classList.remove('active');
+  };
+
+  loginCloseBtn.addEventListener('click', closeAllModals);
+  signupCloseBtn.addEventListener('click', closeAllModals);
+  profileCloseBtn.addEventListener('click', closeAllModals);
+
+  authModal.addEventListener('click', (e) => {
+    if (e.target === authModal) closeAllModals();
+  });
+  profileModal.addEventListener('click', (e) => {
+    if (e.target === profileModal) closeAllModals();
+  });
+
+  // Handle Signup
+  signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('signupConfirmPassword').value;
+
+    if (password !== confirmPassword) {
+      showToast("Passwords don't match!");
+      return;
+    }
+
+    const accounts = getAccounts();
+    const exists = accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase());
+    if (exists) {
+      showToast("An account with this email already exists!");
+      return;
+    }
+
+    const newAcc = {
+      email: email,
+      password: password,
+      name: email.split('@')[0],
+      avatarSeed: 'Riya'
+    };
+
+    accounts.push(newAcc);
+    saveAccounts(accounts);
+    setActiveUser(newAcc);
+    
+    closeAllModals();
+    signupForm.reset();
+    showToast("Account created successfully! Welcome to Graphix Lab. 🎉");
+  });
+
+  // Handle Login
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    const accounts = getAccounts();
+    const user = accounts.find(acc => acc.email.toLowerCase() === email.toLowerCase() && acc.password === password);
+    
+    if (!user) {
+      showToast("Invalid email or password!");
+      return;
+    }
+
+    setActiveUser(user);
+    closeAllModals();
+    loginForm.reset();
+    showToast(`Logged in successfully. Welcome back, ${user.name}!`);
+  });
+
+  // Avatar Selection logic
+  document.querySelectorAll('.avatar-opt').forEach(opt => {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('active'));
+      this.classList.add('active');
+      const seed = this.getAttribute('data-seed');
+      document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+    });
+  });
+
+  // Handle Profile Update
+  profileForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('profileName').value.trim();
+    const newPassword = document.getElementById('profilePassword').value;
+    const activeUser = getActiveUser();
+    
+    if (!activeUser) return;
+
+    const selectedAvatar = document.querySelector('.avatar-opt.active');
+    const avatarSeed = selectedAvatar ? selectedAvatar.getAttribute('data-seed') : 'Riya';
+
+    const accounts = getAccounts();
+    const index = accounts.findIndex(acc => acc.email.toLowerCase() === activeUser.email.toLowerCase());
+
+    if (index !== -1) {
+      accounts[index].name = name;
+      accounts[index].avatarSeed = avatarSeed;
+      if (newPassword) {
+        accounts[index].password = newPassword;
+      }
+      saveAccounts(accounts);
+      setActiveUser(accounts[index]);
+    }
+
+    closeAllModals();
+    showToast("Profile settings saved! ✨");
+  });
+
+  // Handle Logout
+  logoutBtn.addEventListener('click', () => {
+    setActiveUser(null);
+    closeAllModals();
+    showToast("Logged out successfully.");
+  });
+
+  // Initial check
+  updateAuthUI();
+})();
+
+
+// ── AI Chatbot "Riya Assist" ──
+(function initRiyaChat() {
+  const chatFloatBtn = document.getElementById('chatFloatBtn');
+  const chatPanel = document.getElementById('chatPanel');
+  const chatCloseBtn = document.getElementById('chatCloseBtn');
+  const chatInputForm = document.getElementById('chatInputForm');
+  const chatMessageInput = document.getElementById('chatMessageInput');
+  const chatBody = document.getElementById('chatBody');
+
+  if (!chatFloatBtn || !chatPanel || !chatCloseBtn || !chatInputForm) return;
+
+  chatFloatBtn.addEventListener('click', () => {
+    chatPanel.classList.toggle('active');
+    if (chatPanel.classList.contains('active')) {
+      setTimeout(() => chatMessageInput.focus(), 150);
+    }
+  });
+
+  chatCloseBtn.addEventListener('click', () => {
+    chatPanel.classList.remove('active');
+  });
+
+  // Basic Auto-responses regarding Graphix Lab
+  const riyaResponses = [
+    {
+      keywords: ['hi', 'hello', 'hey', 'greetings'],
+      answer: "Hello! I am Riya, your AI design assistant. How can I help you discover or commission design projects with Graphix Lab today?"
+    },
+    {
+      keywords: ['service', 'services', 'what do you do', 'offerings'],
+      answer: "At Graphix Lab, we offer 6 design services: 1. Logo Designs, 2. Branding/Landing Pages, 3. Short Video Editing, 4. Thumbnails/Covers, 5. Prototypes/3D Models, and 6. Vibe Coding Websites. Tap 'Learn More' on any service card to read details!"
+    },
+    {
+      keywords: ['logo', 'identity'],
+      answer: "Our Logo Designs are engineered to capture your brand's unique values cleanly and memorably. We deliver fully vectorized, scalable assets ready for web, mobile, and print."
+    },
+    {
+      keywords: ['branding', 'landing'],
+      answer: "Our Branding & Landing Page service builds consistent visual guidelines and high-converting pages tailored to turn visitors into loyal customers."
+    },
+    {
+      keywords: ['video', 'editing', 'reels', 'shorts'],
+      answer: "We edit raw footage into cinematic transitions, sound-designed hooks, and custom graphics optimized for TikTok, YouTube Shorts, and Reels."
+    },
+    {
+      keywords: ['thumbnail', 'cover'],
+      answer: "We engineer high-contrast thumbnails and cover designs crafted to trigger curiosity and maximize your click-through rates (CTR)."
+    },
+    {
+      keywords: ['prototype', '3d', 'dodecahedron', 'structure'],
+      answer: "We build realistic interactive prototypes and 3D model structures that allow you to preview and perfect product details before manufacturing."
+    },
+    {
+      keywords: ['website', 'code', 'vibe coding', 'web'],
+      answer: "We construct lightweight, ultra-smooth 'Vibe Coding' websites featuring custom interactive animations, fully responsive layouts, and modern aesthetics."
+    },
+    {
+      keywords: ['book', 'order', 'commission', 'request'],
+      answer: "To book a service, simply click the 'Book This Service Now' button on any card back. It will scroll you down to our 'Start Your Project' commission portal where you can enter your requirements!"
+    },
+    {
+      keywords: ['price', 'pricing', 'cost', 'rates'],
+      answer: "We do not list flat pricing, as every design project is bespoke. Tell us about your scope and details in the 'Start Your Project' section, and we will contact you with a customized estimate."
+    },
+    {
+      keywords: ['ai', 'artificial', 'intelligence', 'human'],
+      answer: "Graphix Lab is unique because we combine advanced generative AI tools with human creative talent to deliver perfect designs quickly and with extreme detail."
+    }
+  ];
+
+  function getBotResponse(userMsg) {
+    const cleanMsg = userMsg.toLowerCase().trim();
+    
+    // Look for exact keyword matches
+    for (const item of riyaResponses) {
+      if (item.keywords.some(kw => cleanMsg.includes(kw))) {
+        return item.answer;
+      }
+    }
+
+    // Default response for off-topic or unmatched questions
+    return "I'm sorry, I can only answer questions related to Graphix Lab and our design services. Feel free to ask about our logo designs, video editing, vibe websites, or how to commission a project!";
+  }
+
+  function appendMessage(sender, text) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-message ${sender}`;
+    msgDiv.textContent = text;
+    chatBody.appendChild(msgDiv);
+    
+    // Scroll to bottom
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  chatInputForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const userText = chatMessageInput.value.trim();
+    if (!userText) return;
+
+    // Append User message
+    appendMessage('user', userText);
+    chatMessageInput.value = '';
+
+    // Simulate typing delay
+    setTimeout(() => {
+      const botReply = getBotResponse(userText);
+      appendMessage('bot', botReply);
+    }, 450);
+  });
 })();
 
 
@@ -574,3 +915,4 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     }
   });
 });
+
