@@ -871,7 +871,12 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     } catch (err) {
       console.error('Login error:', err.message);
       if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
-        showToast("Please confirm your email address by clicking the link sent to your inbox!");
+        closeAllModals();
+        if (verificationModal) {
+          verificationModal.classList.add('active');
+        } else {
+          showToast("Please confirm your email address by clicking the link sent to your inbox! ✉️");
+        }
       } else {
         showToast(err.message || "Invalid email or password!");
       }
