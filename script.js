@@ -667,6 +667,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   const signupForm = document.getElementById('signupForm');
   const profileForm = document.getElementById('profileForm');
   const logoutBtn = document.getElementById('logoutBtn');
+  const verificationModal = document.getElementById('verificationModal');
+  const verificationCloseBtn = document.getElementById('verificationCloseBtn');
 
   function showToast(message) {
     let toast = document.querySelector('.toast');
@@ -766,11 +768,13 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   const closeAllModals = () => {
     authModal.classList.remove('active');
     profileModal.classList.remove('active');
+    if (verificationModal) verificationModal.classList.remove('active');
   };
 
   loginCloseBtn.addEventListener('click', closeAllModals);
   signupCloseBtn.addEventListener('click', closeAllModals);
   profileCloseBtn.addEventListener('click', closeAllModals);
+  if (verificationCloseBtn) verificationCloseBtn.addEventListener('click', closeAllModals);
 
   authModal.addEventListener('click', (e) => {
     if (e.target === authModal) closeAllModals();
@@ -778,6 +782,11 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   profileModal.addEventListener('click', (e) => {
     if (e.target === profileModal) closeAllModals();
   });
+  if (verificationModal) {
+    verificationModal.addEventListener('click', (e) => {
+      if (e.target === verificationModal) closeAllModals();
+    });
+  }
 
   // Handle Signup (Live Supabase)
   signupForm.addEventListener('submit', async (e) => {
@@ -818,9 +827,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       closeAllModals();
       signupForm.reset();
       
-      // If user requires email verification:
-      if (data?.user && data.user.identities && data.user.identities.length === 0) {
-        showToast("Account exists or verification required! Check your inbox.");
+      if (verificationModal) {
+        verificationModal.classList.add('active');
       } else {
         showToast("Account created successfully! Check your email to verify. ✉️");
       }
