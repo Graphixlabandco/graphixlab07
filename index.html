@@ -490,6 +490,13 @@
             <button type="button" class="avatar-opt" data-seed="Design">💎</button>
             <button type="button" class="avatar-opt" data-seed="Engine">⚡</button>
           </div>
+          <div style="margin-top: 1rem;">
+            <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.5rem 1rem; cursor: pointer; border-radius: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload Image
+            </label>
+            <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
+          </div>
         </div>
       </div>
 
@@ -543,9 +550,10 @@
     </div>
   </div>
 
-  <!-- Three.js & Supabase via CDN -->
+  <!-- Three.js, Supabase & EmailJS via CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

@@ -368,6 +368,53 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   const successModal = document.getElementById('successModal');
   const successCloseBtn = document.getElementById('successCloseBtn');
 
+  // Helper to send email alerts via EmailJS
+  async function sendBookingEmails(booking) {
+    if (!window.emailjs) {
+      console.warn("EmailJS SDK is not loaded. Skipping confirmation emails.");
+      return;
+    }
+
+    // EmailJS configurations (User can customize these values in script.js when ready)
+    const EMAILJS_PUBLIC_KEY = ""; // Put your EmailJS Public Key here
+    const EMAILJS_SERVICE_ID = ""; // Put your EmailJS Service ID here
+    const EMAILJS_TEMPLATE_CLIENT = ""; // Template ID for customer confirmation
+    const EMAILJS_TEMPLATE_ADMIN = ""; // Template ID for admin notification
+
+    if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID) {
+      console.warn("EmailJS keys are empty. Configure EmailJS variables in script.js to trigger customer and admin email confirmations.");
+      return;
+    }
+
+    try {
+      window.emailjs.init(EMAILJS_PUBLIC_KEY);
+
+      const templateParams = {
+        client_name: booking.client_name,
+        client_email: booking.client_email,
+        client_phone: booking.client_phone,
+        service_type: booking.service,
+        service_brief: booking.brief,
+        booking_time: new Date().toLocaleString(),
+        reply_to: booking.client_email
+      };
+
+      // 1. Send confirmation email to Customer
+      if (EMAILJS_TEMPLATE_CLIENT) {
+        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, templateParams);
+        console.log("Confirmation email sent to customer.");
+      }
+
+      // 2. Send notification email to Admin (me)
+      if (EMAILJS_TEMPLATE_ADMIN) {
+        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, templateParams);
+        console.log("Alert email sent to admin.");
+      }
+    } catch (err) {
+      console.error("Error sending booking email notifications via EmailJS:", err);
+    }
+  }
+
   if (bookingForm) {
     bookingForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -402,6 +449,15 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         } else {
           console.warn('Supabase not initialized, falling back to local simulation.');
         }
+
+        // Trigger email sends to customer and admin
+        sendBookingEmails({
+          service,
+          brief,
+          client_name: name,
+          client_email: email,
+          client_phone: phone
+        });
 
         // Clear inputs
         bookingForm.reset();
@@ -669,6 +725,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   const logoutBtn = document.getElementById('logoutBtn');
   const verificationModal = document.getElementById('verificationModal');
   const verificationCloseBtn = document.getElementById('verificationCloseBtn');
+  const profilePicInput = document.getElementById('profilePicInput');
+  let localUploadedUrl = null;
 
   function showToast(message) {
     let toast = document.querySelector('.toast');
@@ -706,7 +764,12 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       profileBtn.style.display = 'inline-flex';
       
       const seed = user.user_metadata?.avatar_seed || 'Riya';
-      navProfilePic.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+      const customUrl = user.user_metadata?.avatar_url;
+      if (customUrl) {
+        navProfilePic.src = customUrl;
+      } else {
+        navProfilePic.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+      }
     } else {
       authBtn.style.display = 'inline-flex';
       profileBtn.style.display = 'none';
@@ -747,7 +810,15 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       }
     });
 
-    document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${user.user_metadata?.avatar_seed || 'Riya'}`;
+    const seed = user.user_metadata?.avatar_seed || 'Riya';
+    const customUrl = user.user_metadata?.avatar_url;
+    if (customUrl) {
+      document.getElementById('profilePicLarge').src = customUrl;
+    } else {
+      document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+    }
+    
+    localUploadedUrl = null; // Reset uploaded reference
     profileModal.classList.add('active');
   });
 
@@ -817,7 +888,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         options: {
           data: {
             display_name: email.split('@')[0],
-            avatar_seed: 'Riya'
+            avatar_seed: 'Riya-' + Math.random().toString(36).substring(2, 8)
           }
         }
       });
@@ -893,8 +964,59 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       this.classList.add('active');
       const seed = this.getAttribute('data-seed');
       document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
+      localUploadedUrl = null; // Override upload with chosen seed
     });
   });
+
+  // Profile picture upload to Supabase Storage
+  if (profilePicInput) {
+    profilePicInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!supabaseClient) {
+        showToast("Supabase client is not loaded.");
+        return;
+      }
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        showToast("Please log in to upload images.");
+        return;
+      }
+
+      showToast("Uploading profile image...");
+
+      try {
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}-${Date.now()}.${fileExt}`;
+
+        // Upload to public 'avatars' bucket
+        const { data, error } = await supabaseClient.storage
+          .from('avatars')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: true
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabaseClient.storage
+          .from('avatars')
+          .getPublicUrl(filePath);
+
+        localUploadedUrl = publicUrl;
+
+        // Update preview in modal
+        document.getElementById('profilePicLarge').src = publicUrl;
+        showToast("Image uploaded successfully! Remember to save changes.");
+      } catch (err) {
+        console.error("Storage upload error:", err.message);
+        showToast("Upload failed: Make sure you created a public storage bucket named 'avatars' in Supabase! Error: " + err.message);
+      }
+    });
+  }
 
   // Handle Profile Update (Live Supabase)
   profileForm.addEventListener('submit', async (e) => {
@@ -919,6 +1041,11 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
           avatar_seed: avatarSeed
         }
       };
+
+      if (localUploadedUrl) {
+        updateData.data.avatar_url = localUploadedUrl;
+        updateData.data.avatar_seed = ""; // clear seed when using custom url
+      }
 
       if (newPassword !== "") {
         updateData.password = newPassword;
