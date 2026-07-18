@@ -1,3 +1,8 @@
+// ── Supabase Configuration & Initialization ──
+const SUPABASE_URL = "https://xjpirlckvvqjoorzheq.supabase.co";
+const SUPABASE_KEY = "sb_publishable_jhU2211MCzw4L_AEqyp2rw_8i90W5cA";
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
   const canvas = document.getElementById('bgCanvas');
@@ -364,15 +369,53 @@
   const successCloseBtn = document.getElementById('successCloseBtn');
 
   if (bookingForm) {
-    bookingForm.addEventListener('submit', (e) => {
+    bookingForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      // Clear inputs
-      bookingForm.reset();
 
-      // Show success modal
-      if (successModal) {
-        successModal.classList.add('active');
+      const service = document.getElementById('bookingService').value;
+      const brief = document.getElementById('bookingBrief').value.trim();
+      const name = document.getElementById('bookingName').value.trim();
+      const email = document.getElementById('bookingEmail').value.trim();
+      const phone = document.getElementById('bookingPhone').value.trim();
+
+      if (!service || !brief || !name || !email || !phone) return;
+
+      // Disable submit button during upload
+      const submitBtn = bookingForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Booking...';
+
+      try {
+        if (supabase) {
+          const { error } = await supabase
+            .from('bookings')
+            .insert([{
+              service,
+              brief,
+              client_name: name,
+              client_email: email,
+              client_phone: phone
+            }]);
+
+          if (error) throw error;
+        } else {
+          console.warn('Supabase not initialized, falling back to local simulation.');
+        }
+
+        // Clear inputs
+        bookingForm.reset();
+
+        // Show success modal
+        if (successModal) {
+          successModal.classList.add('active');
+        }
+      } catch (err) {
+        console.error('Error booking service:', err.message);
+        alert('Booking failed. Please try again. Error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
       }
     });
   }
@@ -445,30 +488,55 @@
 })();
 
 
-// ── Reviews System (localStorage) ──
+// ── Reviews System (Supabase Live Integration) ──
 (function initReviews() {
   const form = document.getElementById('reviewForm');
   const carousel = document.getElementById('reviewsCarousel');
   if (!form || !carousel) return;
 
-  function getReviews() {
+  function getLocalReviews() {
     const stored = localStorage.getItem('graphixlab_reviews');
-    // Start with blank/empty array as we are doing backend database setup next
     return stored ? JSON.parse(stored) : [];
   }
 
-  function saveReviews(reviews) {
+  function saveLocalReviews(reviews) {
     localStorage.setItem('graphixlab_reviews', JSON.stringify(reviews));
   }
 
-  function renderReviews() {
-    const reviews = getReviews();
+  async function fetchReviews() {
+    if (!supabase) {
+      return getLocalReviews();
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('approved', true)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      console.error('Error fetching reviews from Supabase:', err.message);
+      return getLocalReviews();
+    }
+  }
+
+  async function renderReviews() {
+    carousel.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary); width: 100%; padding: 2rem;">
+        Loading live reviews...
+      </div>
+    `;
+
+    const reviews = await fetchReviews();
     carousel.innerHTML = '';
 
     if (reviews.length === 0) {
       carousel.innerHTML = `
         <div class="empty-reviews-message">
-          <p>No reviews yet. Be the first to share your experience after registering!</p>
+          <p>No reviews yet. Be the first to share your experience!</p>
         </div>
       `;
       return;
@@ -515,7 +583,7 @@
     setTimeout(() => toast.classList.remove('show'), 3000);
   }
 
-  form.addEventListener('submit', (e) => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const name = document.getElementById('reviewerName').value.trim();
@@ -528,26 +596,48 @@
       return;
     }
 
-    const reviews = getReviews();
-    reviews.push({ name, comment, rating });
-    saveReviews(reviews);
+    // Disable submit
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = 'Submitting...';
 
-    renderReviews();
-    form.reset();
-    document.getElementById('ratingValue').value = '0';
-    document.querySelectorAll('.star').forEach(s => {
-      s.classList.remove('active');
-      s.classList.remove('hover');
-    });
+    try {
+      if (supabase) {
+        const { error } = await supabase
+          .from('reviews')
+          .insert([{ name, comment, rating, approved: true }]);
 
-    showToast('Thank you for your review! It will sync to Supabase once live. ✨');
+        if (error) throw error;
+      } else {
+        const local = getLocalReviews();
+        local.push({ name, comment, rating, approved: true });
+        saveLocalReviews(local);
+      }
 
-    setTimeout(() => {
-      carousel.scrollTo({
-        left: carousel.scrollWidth,
-        behavior: 'smooth'
+      form.reset();
+      document.getElementById('ratingValue').value = '0';
+      document.querySelectorAll('.star').forEach(s => {
+        s.classList.remove('active');
+        s.classList.remove('hover');
       });
-    }, 300);
+
+      showToast('Thank you for your review! Live updated. ✨');
+      await renderReviews();
+
+      setTimeout(() => {
+        carousel.scrollTo({
+          left: carousel.scrollWidth,
+          behavior: 'smooth'
+        });
+      }, 300);
+    } catch (err) {
+      console.error('Error saving review to Supabase:', err.message);
+      showToast('Error saving review. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = originalText;
+    }
   });
 
   renderReviews();
