@@ -392,6 +392,10 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       const templateParams = {
         client_name: booking.client_name,
         client_email: booking.client_email,
+        to_email: booking.client_email,
+        user_email: booking.client_email,
+        email: booking.client_email,
+        to_name: booking.client_name,
         client_phone: booking.client_phone,
         service_type: booking.service,
         service_brief: booking.brief,
@@ -401,17 +405,25 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
       // 1. Send confirmation email to Customer
       if (EMAILJS_TEMPLATE_CLIENT) {
-        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, templateParams);
-        console.log("Confirmation email sent to customer.");
+        try {
+          await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, templateParams);
+          console.log("Confirmation email sent to customer.");
+        } catch (clientErr) {
+          console.warn("Client confirmation email dispatch notice:", clientErr);
+        }
       }
 
       // 2. Send notification email to Admin (me)
       if (EMAILJS_TEMPLATE_ADMIN) {
-        await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, templateParams);
-        console.log("Alert email sent to admin.");
+        try {
+          await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ADMIN, templateParams);
+          console.log("Alert email sent to admin.");
+        } catch (adminErr) {
+          console.warn("Admin notification email dispatch notice:", adminErr);
+        }
       }
     } catch (err) {
-      console.error("Error sending booking email notifications via EmailJS:", err);
+      console.error("Error initializing EmailJS:", err);
     }
   }
 
