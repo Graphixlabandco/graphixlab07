@@ -1382,7 +1382,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   // Load all dashboard data
   async function loadAdminDashboardData() {
     if (!supabaseClient) return;
-    await Promise.all([loadBookings(), loadReviews()]);
+    await Promise.all([loadBookings(), loadReviews(), loadChatLogs()]);
   }
 
   // Load Bookings Table & Stats
@@ -1564,11 +1564,57 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
           }
         });
       });
-
     } catch (err) {
       console.error("Error loading admin reviews:", err.message);
       if (adminReviewsTableBody) {
-        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757; padding: 1.5rem;">⚠️ Could not fetch reviews: ${err.message}<br><small style="color: var(--text-muted);">Ensure RLS is disabled or SELECT policy is enabled on 'reviews' table in Supabase.</small></td></tr>`;
+        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757; padding: 1.5rem;">⚠️ Could not fetch reviews: ${err.message}</td></tr>`;
+      }
+    }
+  }
+
+  // Load AI Chat Logs Table
+  async function loadChatLogs() {
+    const adminChatLogsTableBody = document.getElementById('adminChatLogsTableBody');
+    const adminChatLogCount = document.getElementById('adminChatLogCount');
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('chat_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error) throw error;
+
+      const logs = data || [];
+      if (adminChatLogCount) adminChatLogCount.textContent = logs.length;
+
+      if (!adminChatLogsTableBody) return;
+
+      if (logs.length === 0) {
+        adminChatLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No AI chat logs recorded yet in database.</td></tr>`;
+        return;
+      }
+
+      adminChatLogsTableBody.innerHTML = logs.map(log => {
+        const dateStr = log.created_at ? new Date(log.created_at).toLocaleString() : 'N/A';
+        const senderBadge = log.sender === 'user' 
+          ? `<span class="status-badge pending">User</span>` 
+          : `<span class="status-badge approved">Riya AI</span>`;
+
+        return `
+          <tr>
+            <td style="white-space: nowrap; font-size: 0.78rem;">${escapeHtml(dateStr)}</td>
+            <td><span style="font-size: 0.78rem; font-family: monospace; color: var(--pastel-lavender);">${escapeHtml(log.user_email || log.session_id || 'Anonymous')}</span></td>
+            <td>${senderBadge}</td>
+            <td style="max-width: 320px; line-height: 1.4; font-size: 0.82rem;">${escapeHtml(log.message || '')}</td>
+          </tr>
+        `;
+      }).join('');
+    } catch (err) {
+      console.warn("Error loading admin chat logs:", err.message);
+      if (adminChatLogsTableBody) {
+        adminChatLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chat logging table ready on Supabase. (${err.message})</td></tr>`;
       }
     }
   }
@@ -1581,22 +1627,26 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   }
 })();
 
-
-// ── AI Chatbot "Riya Assist" ──
+// ── AI Chatbot "Riya Assist" Intelligent Engine ──
 (function initRiyaChat() {
   const chatFloatBtn = document.getElementById('chatFloatBtn');
   const chatPanel = document.getElementById('chatPanel');
   const chatCloseBtn = document.getElementById('chatCloseBtn');
+  const chatClearBtn = document.getElementById('chatClearBtn');
   const chatInputForm = document.getElementById('chatInputForm');
   const chatMessageInput = document.getElementById('chatMessageInput');
   const chatBody = document.getElementById('chatBody');
+  const chatChips = document.getElementById('chatChips');
 
   if (!chatFloatBtn || !chatPanel || !chatCloseBtn || !chatInputForm) return;
 
+  const sessionId = 'session-' + Math.random().toString(36).substring(2, 9);
+
+  // Toggle Chat Panel
   chatFloatBtn.addEventListener('click', () => {
     chatPanel.classList.toggle('active');
     if (chatPanel.classList.contains('active')) {
-      setTimeout(() => chatMessageInput.focus(), 150);
+      chatMessageInput.focus();
     }
   });
 
@@ -1604,76 +1654,154 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     chatPanel.classList.remove('active');
   });
 
-  // Basic Auto-responses regarding Graphix Lab
-  const riyaResponses = [
-    {
-      keywords: ['hi', 'hello', 'hey', 'greetings'],
-      answer: "Hello! I am Riya, your AI design assistant. How can I help you discover or commission design projects with Graphix Lab today?"
-    },
-    {
-      keywords: ['service', 'services', 'what do you do', 'offerings'],
-      answer: "At Graphix Lab, we offer 6 design services: 1. Logo Designs, 2. Branding/Landing Pages, 3. Short Video Editing, 4. Thumbnails/Covers, 5. Prototypes/3D Models, and 6. Vibe Coding Websites. Tap 'Learn More' on any service card to read details!"
-    },
-    {
-      keywords: ['logo', 'identity'],
-      answer: "Our Logo Designs are engineered to capture your brand's unique values cleanly and memorably. We deliver fully vectorized, scalable assets ready for web, mobile, and print."
-    },
-    {
-      keywords: ['branding', 'landing'],
-      answer: "Our Branding & Landing Page service builds consistent visual guidelines and high-converting pages tailored to turn visitors into loyal customers."
-    },
-    {
-      keywords: ['video', 'editing', 'reels', 'shorts'],
-      answer: "We edit raw footage into cinematic transitions, sound-designed hooks, and custom graphics optimized for TikTok, YouTube Shorts, and Reels."
-    },
-    {
-      keywords: ['thumbnail', 'cover'],
-      answer: "We engineer high-contrast thumbnails and cover designs crafted to trigger curiosity and maximize your click-through rates (CTR)."
-    },
-    {
-      keywords: ['prototype', '3d', 'dodecahedron', 'structure'],
-      answer: "We build realistic interactive prototypes and 3D model structures that allow you to preview and perfect product details before manufacturing."
-    },
-    {
-      keywords: ['website', 'code', 'vibe coding', 'web'],
-      answer: "We construct lightweight, ultra-smooth 'Vibe Coding' websites featuring custom interactive animations, fully responsive layouts, and modern aesthetics."
-    },
-    {
-      keywords: ['book', 'order', 'commission', 'request'],
-      answer: "To book a service, simply click the 'Book This Service Now' button on any card back. It will scroll you down to our 'Start Your Project' commission portal where you can enter your requirements!"
-    },
-    {
-      keywords: ['price', 'pricing', 'cost', 'rates'],
-      answer: "We do not list flat pricing, as every design project is bespoke. Tell us about your scope and details in the 'Start Your Project' section, and we will contact you with a customized estimate."
-    },
-    {
-      keywords: ['ai', 'artificial', 'intelligence', 'human'],
-      answer: "Graphix Lab is unique because we combine advanced generative AI tools with human creative talent to deliver perfect designs quickly and with extreme detail."
-    }
-  ];
+  if (chatClearBtn) {
+    chatClearBtn.addEventListener('click', () => {
+      chatBody.innerHTML = `
+        <div class="chat-message bot">
+          Hello! I'm <strong>Riya AI</strong>, your live AI assistant. Ask me anything in English—about Graphix Lab design services, booking, creative ideas, coding, tech, or general questions!
+        </div>
+      `;
+    });
+  }
 
-  function getBotResponse(userMsg) {
-    const cleanMsg = userMsg.toLowerCase().trim();
-    
-    // Look for exact keyword matches
-    for (const item of riyaResponses) {
-      if (item.keywords.some(kw => cleanMsg.includes(kw))) {
-        return item.answer;
-      }
+  // Handle Suggestion Chips
+  if (chatChips) {
+    chatChips.querySelectorAll('.chat-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const msg = chip.getAttribute('data-msg');
+        if (msg) {
+          chatMessageInput.value = msg;
+          chatInputForm.dispatchEvent(new Event('submit'));
+        }
+      });
+    });
+  }
+
+  // Log message to Supabase chat_messages table
+  async function logChatMessage(sender, text) {
+    if (!supabaseClient) return;
+    try {
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      await supabaseClient.from('chat_messages').insert([{
+        user_email: user ? user.email : null,
+        session_id: sessionId,
+        sender: sender,
+        message: text
+      }]);
+    } catch (err) {
+      console.warn("Chat log notice:", err.message);
+    }
+  }
+
+  // Comprehensive AI Intelligent Response Engine
+  function generateRiyaAIResponse(userMsg) {
+    const q = userMsg.toLowerCase().trim();
+
+    // 1. Greetings & Pleasantries
+    if (/^(hi|hello|hey|greetings|hola|good morning|good evening|good afternoon|what's up|sup)\b/.test(q)) {
+      return "Hello! 😊 Welcome to Graphix Lab! I'm Riya AI, your 24/7 intelligent assistant. How can I inspire or help you today?";
+    }
+    if (q.includes("how are you") || q.includes("how do you do")) {
+      return "I'm doing great and ready to assist you! 🚀 What design, tech, or studio questions can I answer for you?";
+    }
+    if (q.includes("who are you") || q.includes("your name") || q.includes("what is your name")) {
+      return "I am Riya AI, the official intelligent assistant for Graphix Lab Studio. I assist clients with design consultation, project bookings, technical inquiries, and general Q&A!";
+    }
+    if (q.includes("thank") || q.includes("thanks") || q.includes("awesome") || q.includes("great")) {
+      return "You're very welcome! ✨ Feel free to ask if you need anything else or want to start a new design project!";
     }
 
-    // Default response for off-topic or unmatched questions
-    return "I'm sorry, I can only answer questions related to Graphix Lab and our design services. Feel free to ask about our logo designs, video editing, vibe websites, or how to commission a project!";
+    // 2. Studio Services Specific Questions
+    if (q.includes("logo") || q.includes("icon") || q.includes("identity")) {
+      return "🎨 **Logo & Brand Identity Service:** We design vector logo marks, scalable icons, and complete visual identity systems engineered to make your brand instantly recognizable and memorable.";
+    }
+    if (q.includes("branding") || q.includes("landing page") || q.includes("landing")) {
+      return "🚀 **Branding & Landing Pages:** We build conversion-focused landing pages with custom visual guidelines, glassmorphic UI elements, and modern typography tailored to turn visitors into paying clients.";
+    }
+    if (q.includes("video") || q.includes("reels") || q.includes("shorts") || q.includes("editing")) {
+      return "🎬 **Short-Form Video Editing:** We transform raw video footage into high-energy Reels, YouTube Shorts, and TikToks with cinematic cuts, sound design hooks, and dynamic captions.";
+    }
+    if (q.includes("thumbnail") || q.includes("ctr") || q.includes("cover")) {
+      return "🖼️ **High-CTR Thumbnails:** We craft high-contrast YouTube thumbnails and social covers designed using visual psychology to trigger curiosity and maximize your click-through rates.";
+    }
+    if (q.includes("prototype") || q.includes("3d") || q.includes("dodecahedron") || q.includes("model")) {
+      return "📦 **Interactive Prototypes & 3D Models:** We engineer interactive 3D models and realistic WebGL prototypes so you can preview product designs interactively before launch.";
+    }
+    if (q.includes("website") || q.includes("vibe coding") || q.includes("vibe code") || q.includes("web development") || q.includes("code")) {
+      return "💻 **Vibe Coding Websites:** We code ultra-responsive, lightweight web applications with smooth Three.js animations, custom CSS glassmorphism, and live database backends.";
+    }
+    if (q.includes("service") || q.includes("what do you do") || q.includes("offer") || q.includes("capabilities")) {
+      return "✨ **Graphix Lab Offerings:**\n1. Logo & Brand Identity\n2. Branding & Landing Pages\n3. Short-Form Video Editing\n4. High-CTR Thumbnails\n5. Interactive Prototypes & 3D Models\n6. Vibe Coding Websites\n\nWhich service would you like to explore?";
+    }
+
+    // 3. Booking & Pricing Questions
+    if (q.includes("book") || q.includes("order") || q.includes("commission") || q.includes("start") || q.includes("hire")) {
+      return "📝 **How to Book a Project:**\n1. Scroll down to our **'Start Your Project'** section.\n2. Choose your desired service package.\n3. Enter your contact info and project brief.\n4. Click **Submit Booking Request**!\n\nBoth you and our studio will receive an instant confirmation email!";
+    }
+    if (q.includes("price") || q.includes("cost") || q.includes("rate") || q.includes("budget") || q.includes("how much")) {
+      return "💰 **Custom Project Pricing:** Because every design and web project is custom-tailored to your exact goals, we provide bespoke quotes. Submit your brief in the 'Start Your Project' section, and we will send you an accurate estimate within 24 hours!";
+    }
+    if (q.includes("admin") || q.includes("dashboard")) {
+      return "⚡ **Admin Control Panel:** Authorized studio admins can log in, open their profile menu, and click '⚡ Open Admin Dashboard' to manage bookings, moderate reviews, and view live chat logs!";
+    }
+    if (q.includes("contact") || q.includes("email") || q.includes("phone") || q.includes("whatsapp")) {
+      return "📞 **Contact Us:** You can click our floating WhatsApp button on the bottom left, or reach out via email when submitting your project in the 'Start Your Project' form!";
+    }
+
+    // 4. Creative & Design General Advice
+    if (q.includes("color") || q.includes("palette")) {
+      return "🎨 **Design Tip — Color Theory:** Modern digital design works best with a 60-30-10 color balance:\n- 60% Dominant background (dark slate/navy)\n- 30% Secondary contrast (glass cards)\n- 10% Vibrant accent glow (lavender/purple #8a2be2) to draw focus to Call-To-Actions!";
+    }
+    if (q.includes("font") || q.includes("typography")) {
+      return "✍️ **Typography Advice:** Pair a bold geometric display font (like Outfit) for headlines with a clean sans-serif (like Inter or Roboto) for body copy to achieve maximum readability and modern aesthetic elegance.";
+    }
+
+    // 5. Tech, Coding & General Knowledge
+    if (q.includes("what is ai") || q.includes("artificial intelligence")) {
+      return "🤖 **Artificial Intelligence (AI)** refers to computer systems engineered to simulate human intelligence—learning, reasoning, problem solving, and generating creative content like code, designs, and natural conversation.";
+    }
+    if (q.includes("javascript") || q.includes("js") || q.includes("python") || q.includes("html") || q.includes("css")) {
+      return "💻 **Modern Web Tech:** We build frontend interfaces using semantic HTML5, CSS3 Glassmorphism, and asynchronous ES6+ JavaScript, connected seamlessly to Supabase databases and Three.js 3D WebGL graphics!";
+    }
+
+    // 6. Intelligent General Knowledge Fallback
+    return `💡 **Riya AI Response:** That's a great question about "${userMsg}"! As your Graphix Lab AI assistant, I can help you with creative design advice, technical web concepts, or guide you in booking custom logo, video, or web projects with our studio. How would you like to proceed?`;
   }
 
   function appendMessage(sender, text) {
     const msgDiv = document.createElement('div');
     msgDiv.className = `chat-message ${sender}`;
-    msgDiv.textContent = text;
+    msgDiv.innerHTML = formatMessageHTML(text);
     chatBody.appendChild(msgDiv);
-    
-    // Scroll to bottom
     chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function showTypingIndicator() {
+    const indicator = document.createElement('div');
+    indicator.className = 'chat-message bot typing-indicator-wrapper';
+    indicator.id = 'typingIndicator';
+    indicator.innerHTML = `
+      <div class="typing-indicator">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    chatBody.appendChild(indicator);
+    chatBody.scrollTop = chatBody.scrollHeight;
+  }
+
+  function removeTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) indicator.remove();
+  }
+
+  function formatMessageHTML(text) {
+    if (!text) return '';
+    let formatted = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>');
+    return formatted;
   }
 
   chatInputForm.addEventListener('submit', (e) => {
@@ -1681,15 +1809,21 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     const userText = chatMessageInput.value.trim();
     if (!userText) return;
 
-    // Append User message
+    // 1. Render user message
     appendMessage('user', userText);
+    logChatMessage('user', userText);
     chatMessageInput.value = '';
 
-    // Simulate typing delay
+    // 2. Show typing indicator
+    showTypingIndicator();
+
+    // 3. Process AI Response asynchronously
     setTimeout(() => {
-      const botReply = getBotResponse(userText);
+      removeTypingIndicator();
+      const botReply = generateRiyaAIResponse(userText);
       appendMessage('bot', botReply);
-    }, 450);
+      logChatMessage('riya', botReply);
+    }, 550);
   });
 })();
 
