@@ -1,7 +1,12 @@
-// ── Supabase Configuration & Initialization ──
 const SUPABASE_URL = "https://xjpirlckvvqjoorzxheq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqcGlybGNrdnZxam9vcnp4aGVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NDI3OTgsImV4cCI6MjA5OTQxODc5OH0.B9Dx8wNQeqrttTFLUY3jvMugtaH4wqMZ3n2EVAIzLGk";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+// ── Global EmailJS Configuration ──
+const EMAILJS_PUBLIC_KEY = "k2i_99oMeHEmqiILD";
+const EMAILJS_SERVICE_ID = "service_pv3yvv6";
+const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04";
+const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";
 
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
@@ -374,12 +379,6 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       console.warn("EmailJS SDK is not loaded. Skipping confirmation emails.");
       return;
     }
-
-    // EmailJS configurations (User can customize these values in script.js when ready)
-    const EMAILJS_PUBLIC_KEY = "k2i_99oMeHEmqiILD"; // Put your EmailJS Public Key here
-    const EMAILJS_SERVICE_ID = "service_pv3yvv6"; // Put your EmailJS Service ID here
-    const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04"; // Template ID for customer confirmation
-    const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2"; // Template ID for admin notification
 
     if (!EMAILJS_PUBLIC_KEY || !EMAILJS_SERVICE_ID) {
       console.warn("EmailJS keys are empty. Configure EmailJS variables in script.js to trigger customer and admin email confirmations.");
@@ -1031,19 +1030,25 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
   function sendOtpViaEmailJS(targetEmail, code) {
     if (window.emailjs && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_CLIENT) {
-      window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, {
-        client_name: targetEmail.split('@')[0],
-        client_email: targetEmail,
-        to_email: targetEmail,
-        user_email: targetEmail,
-        service_type: 'Account Verification',
-        service_brief: `Your 6-Digit Graphix Lab Verification Code is: ${code}`,
-        reply_to: targetEmail
-      }).then(() => {
-        console.log("Verification OTP email sent via EmailJS.");
-      }).catch(err => {
-        console.warn("EmailJS OTP dispatch notice:", err);
-      });
+      try {
+        if (EMAILJS_PUBLIC_KEY) window.emailjs.init(EMAILJS_PUBLIC_KEY);
+        window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, {
+          client_name: targetEmail.split('@')[0],
+          client_email: targetEmail,
+          to_email: targetEmail,
+          user_email: targetEmail,
+          email: targetEmail,
+          service_type: 'Account Verification',
+          service_brief: `Your 6-Digit Graphix Lab Verification Code is: ${code}`,
+          reply_to: targetEmail
+        }).then(() => {
+          console.log("Verification OTP email sent via EmailJS.");
+        }).catch(err => {
+          console.warn("EmailJS OTP dispatch notice:", err);
+        });
+      } catch (err) {
+        console.warn("EmailJS init error:", err);
+      }
     }
   }
 
