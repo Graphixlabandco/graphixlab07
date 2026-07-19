@@ -770,6 +770,18 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     });
   });
 
+  // Authorized Admin Emails list
+  const ADMIN_EMAILS = [
+    'graphixlab07@gmail.com'
+  ];
+
+  function isAdminUser(user) {
+    if (!user) return false;
+    if (user.user_metadata?.is_admin === true) return true;
+    if (user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) return true;
+    return false;
+  }
+
   // Update navbar trigger UI
   const adminOpenBtn = document.getElementById('adminOpenBtn');
   const adminModal = document.getElementById('adminModal');
@@ -778,7 +790,15 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     if (user) {
       authBtn.style.display = 'none';
       profileBtn.style.display = 'inline-flex';
-      if (adminOpenBtn) adminOpenBtn.style.display = 'block';
+      
+      // Restrict Admin Panel button strictly to authorized admin accounts
+      if (adminOpenBtn) {
+        if (isAdminUser(user)) {
+          adminOpenBtn.style.display = 'block';
+        } else {
+          adminOpenBtn.style.display = 'none';
+        }
+      }
       
       const seed = user.user_metadata?.avatar_seed || 'Riya';
       const customUrl = user.user_metadata?.avatar_url;
@@ -1191,7 +1211,13 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
   // Open & Close Admin Modal
   if (adminOpenBtn) {
-    adminOpenBtn.addEventListener('click', () => {
+    adminOpenBtn.addEventListener('click', async () => {
+      if (!supabaseClient) return;
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user || (!user.email || !user.email.toLowerCase().includes('graphixlab07@gmail.com')) && !user.user_metadata?.is_admin) {
+        showToast("Access Denied: Admin privileges required. 🔒");
+        return;
+      }
       adminModal.classList.add('active');
       loadAdminDashboardData();
     });
