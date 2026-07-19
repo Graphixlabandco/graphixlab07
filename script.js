@@ -931,7 +931,11 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       }
     } catch (err) {
       console.error('Signup error:', err.message);
-      showToast(err.message || "Failed to create account.");
+      if (err.message && err.message.toLowerCase().includes('rate limit')) {
+        showToast("Supabase Email Rate Limit reached (max 4 signup emails per hour). Please wait a few minutes or check your inbox! ⏳");
+      } else {
+        showToast(err.message || "Failed to create account.");
+      }
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalText;
