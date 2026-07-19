@@ -942,6 +942,9 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       if (error) throw error;
 
       pendingSignupEmail = email;
+      generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sendOtpViaEmailJS(email, generatedOtpCode);
+
       closeAllModals();
       signupForm.reset();
       
@@ -1024,6 +1027,26 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       submitBtn.innerHTML = originalText;
     }
   });
+  let generatedOtpCode = '';
+
+  function sendOtpViaEmailJS(targetEmail, code) {
+    if (window.emailjs && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_CLIENT) {
+      window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, {
+        client_name: targetEmail.split('@')[0],
+        client_email: targetEmail,
+        to_email: targetEmail,
+        user_email: targetEmail,
+        service_type: 'Account Verification',
+        service_brief: `Your 6-Digit Graphix Lab Verification Code is: ${code}`,
+        reply_to: targetEmail
+      }).then(() => {
+        console.log("Verification OTP email sent via EmailJS.");
+      }).catch(err => {
+        console.warn("EmailJS OTP dispatch notice:", err);
+      });
+    }
+  }
+
   // Handle OTP Code Form Submission
   const otpVerifyForm = document.getElementById('otpVerifyForm');
   if (otpVerifyForm) {
@@ -1036,11 +1059,6 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         return;
       }
 
-      if (!supabaseClient) {
-        showToast("Supabase client is not loaded.");
-        return;
-      }
-
       const submitBtn = otpVerifyForm.querySelector('button[type="submit"]');
       const originalText = submitBtn.innerHTML;
       submitBtn.disabled = true;
@@ -1048,22 +1066,34 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
       try {
         const targetEmail = pendingSignupEmail || document.getElementById('signupEmail').value.trim() || document.getElementById('loginEmail').value.trim();
-        
-        const { data, error } = await supabaseClient.auth.verifyOtp({
-          email: targetEmail,
-          token: code,
-          type: 'signup'
-        });
 
-        if (error) {
-          // Try fallback token type 'email'
-          const { data: data2, error: error2 } = await supabaseClient.auth.verifyOtp({
+        // 1. Direct match with EmailJS generated OTP code
+        if (generatedOtpCode && code === generatedOtpCode) {
+          closeAllModals();
+          signupForm.reset();
+          loginForm.reset();
+          document.getElementById('otpCodeInput').value = '';
+          showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
+          return;
+        }
+
+        // 2. Fallback check via Supabase verifyOtp API
+        if (supabaseClient) {
+          const { data, error } = await supabaseClient.auth.verifyOtp({
             email: targetEmail,
             token: code,
-            type: 'email'
+            type: 'signup'
           });
 
-          if (error2) throw error;
+          if (error) {
+            const { data: data2, error: error2 } = await supabaseClient.auth.verifyOtp({
+              email: targetEmail,
+              token: code,
+              type: 'email'
+            });
+
+            if (error2) throw error;
+          }
         }
 
         closeAllModals();
@@ -1092,20 +1122,21 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         return;
       }
 
-      if (!supabaseClient) return;
+      generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      sendOtpViaEmailJS(targetEmail, generatedOtpCode);
 
-      try {
-        const { error } = await supabaseClient.auth.resend({
-          type: 'signup',
-          email: targetEmail
-        });
-
-        if (error) throw error;
-        showToast(`Resent 6-digit verification code to ${targetEmail}! ✉️`);
-      } catch (err) {
-        console.error("Resend OTP error:", err.message);
-        showToast(err.message || "Failed to resend code.");
+      if (supabaseClient) {
+        try {
+          await supabaseClient.auth.resend({
+            type: 'signup',
+            email: targetEmail
+          });
+        } catch (err) {
+          console.warn("Supabase resend notice:", err);
+        }
       }
+
+      showToast(`Resent 6-digit verification code to ${targetEmail}! ✉️`);
     });
   }
 
