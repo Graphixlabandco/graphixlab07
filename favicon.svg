@@ -1,6 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#0b0b10"/>
   <clipPath id="circleClip">
-    <circle cx="50" cy="50" r="50"/>
+    <circle cx="256" cy="256" r="256"/>
   </clipPath>
-  <image href="logo.png" width="100" height="100" clip-path="url(#circleClip)" preserveAspectRatio="xMidYMid slice"/>
+  <image href="logo.png" width="512" height="512" clip-path="url(#circleClip)" preserveAspectRatio="xMidYMid slice"/>
 </svg>
