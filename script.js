@@ -948,6 +948,8 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         } else {
           showToast("Please confirm your email address by clicking the link sent to your inbox! ✉️");
         }
+      } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
+        showToast("Invalid email or password! If you don't have an account yet, please click 'Sign up' to create one.");
       } else {
         showToast(err.message || "Invalid email or password!");
       }
@@ -1080,10 +1082,14 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     }
   });
 
-  // Trigger initial UI sync
-  const initialUser = supabaseClient ? supabaseClient.auth.getUser() : null;
-  if (initialUser && typeof initialUser.then === 'function') {
-    initialUser.then(({ data: { user } }) => updateAuthUI(user));
+  // Trigger initial UI sync safely
+  if (supabaseClient) {
+    supabaseClient.auth.getUser()
+      .then(({ data: { user } }) => updateAuthUI(user))
+      .catch((err) => {
+        console.warn("Initial session restoration fallback:", err);
+        updateAuthUI(null);
+      });
   }
 })();
 
