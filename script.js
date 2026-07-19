@@ -1038,8 +1038,9 @@ const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";
           to_email: targetEmail,
           user_email: targetEmail,
           email: targetEmail,
+          otp_code: code,
           service_type: 'Account Verification',
-          service_brief: `Your 6-Digit Graphix Lab Verification Code is: ${code}`,
+          service_brief: code,
           reply_to: targetEmail
         }).then(() => {
           console.log("Verification OTP email sent via EmailJS.");
