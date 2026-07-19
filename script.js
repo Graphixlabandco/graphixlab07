@@ -1063,9 +1063,23 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
       const { error } = await supabaseClient.auth.updateUser(updateData);
 
-      if (error) throw error;
+      if (error) {
+        // If the error is only about the password matching the old password (e.g. autofilled password), update metadata without password!
+        if (error.message && error.message.toLowerCase().includes('different from the old password')) {
+          delete updateData.password;
+          const { error: metaErr } = await supabaseClient.auth.updateUser(updateData);
+          if (metaErr) throw metaErr;
+          
+          closeAllModals();
+          document.getElementById('profilePassword').value = '';
+          showToast("Profile details updated successfully! ✨");
+          return;
+        }
+        throw error;
+      }
 
       closeAllModals();
+      document.getElementById('profilePassword').value = '';
       showToast("Profile settings saved successfully! ✨");
     } catch (err) {
       console.error('Profile update error:', err.message);
