@@ -941,13 +941,21 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 
       if (error) throw error;
 
+      pendingSignupEmail = email;
       closeAllModals();
       signupForm.reset();
       
       if (verificationModal) {
+        const emailText = document.getElementById('verificationEmailText');
+        if (emailText) emailText.textContent = email;
         verificationModal.classList.add('active');
+        const otpInput = document.getElementById('otpCodeInput');
+        if (otpInput) {
+          otpInput.value = '';
+          otpInput.focus();
+        }
       } else {
-        showToast("Account created successfully! Check your email to verify. ✉️");
+        showToast("Account created! Check your email for the 6-digit verification code. ✉️");
       }
     } catch (err) {
       console.error('Signup error:', err.message);
@@ -992,11 +1000,19 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     } catch (err) {
       console.error('Login error:', err.message);
       if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
+        pendingSignupEmail = email;
         closeAllModals();
         if (verificationModal) {
+          const emailText = document.getElementById('verificationEmailText');
+          if (emailText) emailText.textContent = email;
           verificationModal.classList.add('active');
+          const otpInput = document.getElementById('otpCodeInput');
+          if (otpInput) {
+            otpInput.value = '';
+            otpInput.focus();
+          }
         } else {
-          showToast("Please confirm your email address by clicking the link sent to your inbox! ✉️");
+          showToast("Please enter the 6-digit verification code sent to your inbox! ✉️");
         }
       } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
         showToast("Invalid email or password! If you don't have an account yet, please click 'Sign up' to create one.");
@@ -1008,6 +1024,90 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       submitBtn.innerHTML = originalText;
     }
   });
+  // Handle OTP Code Form Submission
+  const otpVerifyForm = document.getElementById('otpVerifyForm');
+  if (otpVerifyForm) {
+    otpVerifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('otpCodeInput').value.trim();
+      
+      if (!code || code.length !== 6) {
+        showToast("Please enter a valid 6-digit verification code!");
+        return;
+      }
+
+      if (!supabaseClient) {
+        showToast("Supabase client is not loaded.");
+        return;
+      }
+
+      const submitBtn = otpVerifyForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Verifying...';
+
+      try {
+        const targetEmail = pendingSignupEmail || document.getElementById('signupEmail').value.trim() || document.getElementById('loginEmail').value.trim();
+        
+        const { data, error } = await supabaseClient.auth.verifyOtp({
+          email: targetEmail,
+          token: code,
+          type: 'signup'
+        });
+
+        if (error) {
+          // Try fallback token type 'email'
+          const { data: data2, error: error2 } = await supabaseClient.auth.verifyOtp({
+            email: targetEmail,
+            token: code,
+            type: 'email'
+          });
+
+          if (error2) throw error;
+        }
+
+        closeAllModals();
+        signupForm.reset();
+        loginForm.reset();
+        document.getElementById('otpCodeInput').value = '';
+        showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
+      } catch (err) {
+        console.error("OTP verification error:", err.message);
+        showToast("Invalid code: " + (err.message || "Please check the 6-digit code and try again."));
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+  }
+
+  // Handle Resend OTP Code
+  const resendOtpBtn = document.getElementById('resendOtpBtn');
+  if (resendOtpBtn) {
+    resendOtpBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const targetEmail = pendingSignupEmail || document.getElementById('signupEmail').value.trim() || document.getElementById('loginEmail').value.trim();
+      if (!targetEmail) {
+        showToast("No email address found to resend code.");
+        return;
+      }
+
+      if (!supabaseClient) return;
+
+      try {
+        const { error } = await supabaseClient.auth.resend({
+          type: 'signup',
+          email: targetEmail
+        });
+
+        if (error) throw error;
+        showToast(`Resent 6-digit verification code to ${targetEmail}! ✉️`);
+      } catch (err) {
+        console.error("Resend OTP error:", err.message);
+        showToast(err.message || "Failed to resend code.");
+      }
+    });
+  }
 
   // Avatar Selection logic
   document.querySelectorAll('.avatar-opt').forEach(opt => {
