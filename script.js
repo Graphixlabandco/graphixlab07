@@ -5,8 +5,9 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
 // ── Global EmailJS Configuration ──
 const EMAILJS_PUBLIC_KEY = "k2i_99oMeHEmqiILD";
 const EMAILJS_SERVICE_ID = "service_pv3yvv6";
-const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04";
-const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";
+const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04"; // Customer booking confirmation template
+const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";  // Admin booking notification template
+const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP verification template (Update to new template ID when created)
 
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
@@ -1029,10 +1030,11 @@ const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";
   let generatedOtpCode = '';
 
   function sendOtpViaEmailJS(targetEmail, code) {
-    if (window.emailjs && EMAILJS_SERVICE_ID && EMAILJS_TEMPLATE_CLIENT) {
+    const templateId = EMAILJS_TEMPLATE_OTP || EMAILJS_TEMPLATE_CLIENT;
+    if (window.emailjs && EMAILJS_SERVICE_ID && templateId) {
       try {
         if (EMAILJS_PUBLIC_KEY) window.emailjs.init(EMAILJS_PUBLIC_KEY);
-        window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_CLIENT, {
+        window.emailjs.send(EMAILJS_SERVICE_ID, templateId, {
           client_name: targetEmail.split('@')[0],
           client_email: targetEmail,
           to_email: targetEmail,
