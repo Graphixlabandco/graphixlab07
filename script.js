@@ -1263,22 +1263,28 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       if (!adminBookingsTableBody) return;
 
       if (bookings.length === 0) {
-        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No booking requests found.</td></tr>`;
+        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No booking requests found in database.</td></tr>`;
         return;
       }
 
       adminBookingsTableBody.innerHTML = bookings.map(b => {
-        const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString() : 'N/A';
+        const dateStr = b.created_at ? new Date(b.created_at).toLocaleString() : (b.date || 'N/A');
+        const clientName = b.client_name || b.name || b.full_name || 'Client';
+        const clientEmail = b.client_email || b.email || '';
+        const clientPhone = b.client_phone || b.phone || b.mobile || 'N/A';
+        const serviceName = b.service || b.service_type || b.plan || 'Design';
+        const briefText = b.brief || b.description || b.message || b.details || 'No brief provided';
+
         return `
           <tr>
-            <td>${dateStr}</td>
-            <td><strong>${escapeHtml(b.client_name || 'Client')}</strong></td>
-            <td><span class="status-badge approved">${escapeHtml(b.service || 'Design')}</span></td>
+            <td style="white-space: nowrap; font-size: 0.78rem;">${escapeHtml(dateStr)}</td>
+            <td><strong>${escapeHtml(clientName)}</strong></td>
+            <td><span class="status-badge approved">${escapeHtml(serviceName)}</span></td>
             <td>
-              <div><a href="mailto:${escapeHtml(b.client_email)}" style="color: var(--pastel-lavender);">${escapeHtml(b.client_email)}</a></div>
-              <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(b.client_phone || '')}</div>
+              <div><a href="mailto:${escapeHtml(clientEmail)}" style="color: var(--pastel-lavender); font-weight: 600;">${escapeHtml(clientEmail)}</a></div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">📞 ${escapeHtml(clientPhone)}</div>
             </td>
-            <td style="max-width: 250px; font-style: italic; color: var(--text-secondary);">${escapeHtml(b.brief || '')}</td>
+            <td style="max-width: 280px; font-style: italic; color: var(--text-secondary); line-height: 1.4;">${escapeHtml(briefText)}</td>
             <td>
               <button class="admin-action-btn btn-delete delete-booking-btn" data-id="${b.id}">Delete</button>
             </td>
@@ -1310,7 +1316,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     } catch (err) {
       console.error("Error loading admin bookings:", err.message);
       if (adminBookingsTableBody) {
-        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757;">Error loading bookings: ${err.message}</td></tr>`;
+        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757; padding: 1.5rem;">⚠️ Could not fetch bookings: ${err.message}<br><small style="color: var(--text-muted);">Ensure RLS is disabled or SELECT policy is enabled on 'bookings' table in Supabase.</small></td></tr>`;
       }
     }
   }
@@ -1326,7 +1332,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       if (error) throw error;
 
       const reviews = data || [];
-      const approvedCount = reviews.filter(r => r.approved).length;
+      const approvedCount = reviews.filter(r => r.approved === true || r.approved === 'true').length;
       const pendingCount = reviews.length - approvedCount;
 
       if (statApprovedReviews) statApprovedReviews.textContent = approvedCount;
@@ -1336,29 +1342,30 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
       if (!adminReviewsTableBody) return;
 
       if (reviews.length === 0) {
-        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No customer reviews found.</td></tr>`;
+        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No customer reviews found in database.</td></tr>`;
         return;
       }
 
       adminReviewsTableBody.innerHTML = reviews.map(r => {
         const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A';
         const stars = '★'.repeat(r.rating || 5);
-        const statusBadge = r.approved 
+        const isApproved = r.approved === true || r.approved === 'true';
+        const statusBadge = isApproved 
           ? `<span class="status-badge approved">Approved</span>`
           : `<span class="status-badge pending">Pending</span>`;
 
-        const toggleBtnText = r.approved ? 'Disapprove' : 'Approve';
-        const toggleBtnClass = r.approved ? 'btn-unapprove' : 'btn-approve';
+        const toggleBtnText = isApproved ? 'Disapprove' : 'Approve';
+        const toggleBtnClass = isApproved ? 'btn-unapprove' : 'btn-approve';
 
         return `
           <tr>
             <td>${statusBadge}</td>
             <td><strong>${escapeHtml(r.name || 'Anonymous')}</strong></td>
             <td style="color: #ffab00;">${stars}</td>
-            <td style="max-width: 280px;">${escapeHtml(r.comment || '')}</td>
-            <td>${dateStr}</td>
+            <td style="max-width: 280px; line-height: 1.4;">${escapeHtml(r.comment || '')}</td>
+            <td style="white-space: nowrap; font-size: 0.78rem;">${dateStr}</td>
             <td style="white-space: nowrap;">
-              <button class="admin-action-btn ${toggleBtnClass} toggle-review-btn" data-id="${r.id}" data-approved="${r.approved}">${toggleBtnText}</button>
+              <button class="admin-action-btn ${toggleBtnClass} toggle-review-btn" data-id="${r.id}" data-approved="${isApproved}">${toggleBtnText}</button>
               <button class="admin-action-btn btn-delete delete-review-btn" data-id="${r.id}">Delete</button>
             </td>
           </tr>
@@ -1422,7 +1429,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     } catch (err) {
       console.error("Error loading admin reviews:", err.message);
       if (adminReviewsTableBody) {
-        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757;">Error loading reviews: ${err.message}</td></tr>`;
+        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757; padding: 1.5rem;">⚠️ Could not fetch reviews: ${err.message}<br><small style="color: var(--text-muted);">Ensure RLS is disabled or SELECT policy is enabled on 'reviews' table in Supabase.</small></td></tr>`;
       }
     }
   }
