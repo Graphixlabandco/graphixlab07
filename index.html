@@ -529,6 +529,7 @@
       </form>
 
       <div class="profile-actions-divider" style="margin: 1.5rem 0; border-top: 1px solid var(--glass-border);"></div>
+      <button type="button" class="submit-btn admin-open-btn" id="adminOpenBtn" style="background: var(--gradient-primary); color: #fff; width: 100%; margin-bottom: 0.8rem; display: none;">⚡ Open Admin Dashboard</button>
       <button class="submit-btn logout-btn" id="logoutBtn" style="background: var(--gradient-accent); color: #fff; width: 100%;">Log Out</button>
     </div>
   </div>
@@ -550,6 +551,107 @@
       <h2 style="font-family: var(--font-display); font-weight: 800; margin-bottom: 0.5rem;">Verify Your Email</h2>
       <p style="color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.5rem;">A confirmation link has been sent to your registered email address. Please check your inbox (and spam folder) and click the link to activate your account.</p>
       <button class="submit-btn" id="verificationCloseBtn" style="min-width: 120px;">Okay</button>
+    </div>
+  </div>
+
+  <!-- ══════════════ ADMIN CONTROL PANEL MODAL ══════════════ -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-content glass-panel admin-panel-content">
+      <button class="modal-close" id="adminCloseBtn">&times;</button>
+      <div class="admin-header">
+        <div class="admin-brand">
+          <span class="admin-badge">ADMIN CONTROL PANEL</span>
+          <h2>Studio Management Portal</h2>
+        </div>
+        <button class="glass-btn refresh-admin-btn" id="adminRefreshBtn" title="Refresh Live Data">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Refresh Data
+        </button>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="tabOverview">Overview</button>
+        <button class="admin-tab" data-tab="tabBookings">Bookings (<span id="adminBookingCount">0</span>)</button>
+        <button class="admin-tab" data-tab="tabReviews">Reviews Moderation (<span id="adminReviewCount">0</span>)</button>
+      </div>
+
+      <!-- Tab 1: Overview Stats -->
+      <div class="admin-tab-content active" id="tabOverview">
+        <div class="admin-stats-grid">
+          <div class="admin-stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-info">
+              <span class="stat-label">Total Bookings</span>
+              <h3 id="statTotalBookings">0</h3>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-info">
+              <span class="stat-label">Approved Reviews</span>
+              <h3 id="statApprovedReviews">0</h3>
+            </div>
+          </div>
+          <div class="admin-stat-card">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-info">
+              <span class="stat-label">Pending Reviews</span>
+              <h3 id="statPendingReviews">0</h3>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-section-title">
+          <h3>Quick Guidelines & Supabase Status</h3>
+        </div>
+        <div class="admin-info-box">
+          <p>⚡ <strong>Live Moderation:</strong> Toggling review approvals in the <em>Reviews Moderation</em> tab immediately updates your live website's testimonial carousel.</p>
+          <p>📩 <strong>Client Communication:</strong> Clicking a client's email or phone number in the <em>Bookings</em> tab initiates direct contact.</p>
+        </div>
+      </div>
+
+      <!-- Tab 2: Bookings Management -->
+      <div class="admin-tab-content" id="tabBookings">
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Service</th>
+                <th>Contact</th>
+                <th>Brief</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminBookingsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading live bookings...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Reviews Moderation -->
+      <div class="admin-tab-content" id="tabReviews">
+        <div class="admin-table-wrapper">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>Reviewer</th>
+                <th>Rating</th>
+                <th>Comment</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="adminReviewsTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading reviews...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 

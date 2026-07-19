@@ -709,6 +709,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   });
 
   renderReviews();
+  window.refreshWebsiteReviews = renderReviews;
 })();
 
 
@@ -770,10 +771,14 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
   });
 
   // Update navbar trigger UI
+  const adminOpenBtn = document.getElementById('adminOpenBtn');
+  const adminModal = document.getElementById('adminModal');
+
   function updateAuthUI(user) {
     if (user) {
       authBtn.style.display = 'none';
       profileBtn.style.display = 'inline-flex';
+      if (adminOpenBtn) adminOpenBtn.style.display = 'block';
       
       const seed = user.user_metadata?.avatar_seed || 'Riya';
       const customUrl = user.user_metadata?.avatar_url;
@@ -785,6 +790,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     } else {
       authBtn.style.display = 'inline-flex';
       profileBtn.style.display = 'none';
+      if (adminOpenBtn) adminOpenBtn.style.display = 'none';
     }
   }
 
@@ -852,6 +858,7 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     authModal.classList.remove('active');
     profileModal.classList.remove('active');
     if (verificationModal) verificationModal.classList.remove('active');
+    if (adminModal) adminModal.classList.remove('active');
   };
 
   loginCloseBtn.addEventListener('click', closeAllModals);
@@ -1124,6 +1131,270 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
         console.warn("Initial session restoration fallback:", err);
         updateAuthUI(null);
       });
+  }
+})();
+
+
+// ── Admin Control Panel Manager ──
+(function initAdminPanel() {
+  const adminModal = document.getElementById('adminModal');
+  const adminOpenBtn = document.getElementById('adminOpenBtn');
+  const adminCloseBtn = document.getElementById('adminCloseBtn');
+  const adminRefreshBtn = document.getElementById('adminRefreshBtn');
+
+  const adminBookingsTableBody = document.getElementById('adminBookingsTableBody');
+  const adminReviewsTableBody = document.getElementById('adminReviewsTableBody');
+
+  const statTotalBookings = document.getElementById('statTotalBookings');
+  const statApprovedReviews = document.getElementById('statApprovedReviews');
+  const statPendingReviews = document.getElementById('statPendingReviews');
+  const adminBookingCount = document.getElementById('adminBookingCount');
+  const adminReviewCount = document.getElementById('adminReviewCount');
+
+  if (!adminModal) return;
+
+  function showToast(message) {
+    let toast = document.querySelector('.toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Tab switching logic
+  document.querySelectorAll('.admin-tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+
+      tabBtn.classList.add('active');
+      const targetTab = tabBtn.getAttribute('data-tab');
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) targetContent.classList.add('active');
+    });
+  });
+
+  // Open & Close Admin Modal
+  if (adminOpenBtn) {
+    adminOpenBtn.addEventListener('click', () => {
+      adminModal.classList.add('active');
+      loadAdminDashboardData();
+    });
+  }
+
+  if (adminCloseBtn) {
+    adminCloseBtn.addEventListener('click', () => {
+      adminModal.classList.remove('active');
+    });
+  }
+
+  if (adminRefreshBtn) {
+    adminRefreshBtn.addEventListener('click', () => {
+      loadAdminDashboardData();
+      showToast("Refreshed live admin data! 🔄");
+    });
+  }
+
+  adminModal.addEventListener('click', (e) => {
+    if (e.target === adminModal) adminModal.classList.remove('active');
+  });
+
+  // Load all dashboard data
+  async function loadAdminDashboardData() {
+    if (!supabaseClient) return;
+    await Promise.all([loadBookings(), loadReviews()]);
+  }
+
+  // Load Bookings Table & Stats
+  async function loadBookings() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const bookings = data || [];
+      if (statTotalBookings) statTotalBookings.textContent = bookings.length;
+      if (adminBookingCount) adminBookingCount.textContent = bookings.length;
+
+      if (!adminBookingsTableBody) return;
+
+      if (bookings.length === 0) {
+        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No booking requests found.</td></tr>`;
+        return;
+      }
+
+      adminBookingsTableBody.innerHTML = bookings.map(b => {
+        const dateStr = b.created_at ? new Date(b.created_at).toLocaleDateString() : 'N/A';
+        return `
+          <tr>
+            <td>${dateStr}</td>
+            <td><strong>${escapeHtml(b.client_name || 'Client')}</strong></td>
+            <td><span class="status-badge approved">${escapeHtml(b.service || 'Design')}</span></td>
+            <td>
+              <div><a href="mailto:${escapeHtml(b.client_email)}" style="color: var(--pastel-lavender);">${escapeHtml(b.client_email)}</a></div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(b.client_phone || '')}</div>
+            </td>
+            <td style="max-width: 250px; font-style: italic; color: var(--text-secondary);">${escapeHtml(b.brief || '')}</td>
+            <td>
+              <button class="admin-action-btn btn-delete delete-booking-btn" data-id="${b.id}">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Wire delete booking buttons
+      adminBookingsTableBody.querySelectorAll('.delete-booking-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const bookingId = btn.getAttribute('data-id');
+          if (!confirm("Are you sure you want to delete this booking request?")) return;
+          
+          try {
+            const { error } = await supabaseClient
+              .from('bookings')
+              .delete()
+              .eq('id', bookingId);
+
+            if (error) throw error;
+            showToast("Booking deleted successfully!");
+            loadBookings();
+          } catch (err) {
+            console.error("Delete booking error:", err.message);
+            showToast("Failed to delete booking: " + err.message);
+          }
+        });
+      });
+    } catch (err) {
+      console.error("Error loading admin bookings:", err.message);
+      if (adminBookingsTableBody) {
+        adminBookingsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757;">Error loading bookings: ${err.message}</td></tr>`;
+      }
+    }
+  }
+
+  // Load Reviews Moderation Table & Stats
+  async function loadReviews() {
+    try {
+      const { data, error } = await supabaseClient
+        .from('reviews')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const reviews = data || [];
+      const approvedCount = reviews.filter(r => r.approved).length;
+      const pendingCount = reviews.length - approvedCount;
+
+      if (statApprovedReviews) statApprovedReviews.textContent = approvedCount;
+      if (statPendingReviews) statPendingReviews.textContent = pendingCount;
+      if (adminReviewCount) adminReviewCount.textContent = reviews.length;
+
+      if (!adminReviewsTableBody) return;
+
+      if (reviews.length === 0) {
+        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No customer reviews found.</td></tr>`;
+        return;
+      }
+
+      adminReviewsTableBody.innerHTML = reviews.map(r => {
+        const dateStr = r.created_at ? new Date(r.created_at).toLocaleDateString() : 'N/A';
+        const stars = '★'.repeat(r.rating || 5);
+        const statusBadge = r.approved 
+          ? `<span class="status-badge approved">Approved</span>`
+          : `<span class="status-badge pending">Pending</span>`;
+
+        const toggleBtnText = r.approved ? 'Disapprove' : 'Approve';
+        const toggleBtnClass = r.approved ? 'btn-unapprove' : 'btn-approve';
+
+        return `
+          <tr>
+            <td>${statusBadge}</td>
+            <td><strong>${escapeHtml(r.name || 'Anonymous')}</strong></td>
+            <td style="color: #ffab00;">${stars}</td>
+            <td style="max-width: 280px;">${escapeHtml(r.comment || '')}</td>
+            <td>${dateStr}</td>
+            <td style="white-space: nowrap;">
+              <button class="admin-action-btn ${toggleBtnClass} toggle-review-btn" data-id="${r.id}" data-approved="${r.approved}">${toggleBtnText}</button>
+              <button class="admin-action-btn btn-delete delete-review-btn" data-id="${r.id}">Delete</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Wire toggle approval buttons
+      adminReviewsTableBody.querySelectorAll('.toggle-review-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const reviewId = btn.getAttribute('data-id');
+          const currentApproved = btn.getAttribute('data-approved') === 'true';
+          const newStatus = !currentApproved;
+
+          try {
+            const { error } = await supabaseClient
+              .from('reviews')
+              .update({ approved: newStatus })
+              .eq('id', reviewId);
+
+            if (error) throw error;
+
+            showToast(newStatus ? "Review approved & published live! ✨" : "Review hidden from website.");
+            await loadReviews();
+
+            if (typeof window.refreshWebsiteReviews === 'function') {
+              window.refreshWebsiteReviews();
+            }
+          } catch (err) {
+            console.error("Toggle review error:", err.message);
+            showToast("Failed to update review status: " + err.message);
+          }
+        });
+      });
+
+      // Wire delete review buttons
+      adminReviewsTableBody.querySelectorAll('.delete-review-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const reviewId = btn.getAttribute('data-id');
+          if (!confirm("Are you sure you want to delete this review?")) return;
+
+          try {
+            const { error } = await supabaseClient
+              .from('reviews')
+              .delete()
+              .eq('id', reviewId);
+
+            if (error) throw error;
+            showToast("Review deleted successfully!");
+            await loadReviews();
+
+            if (typeof window.refreshWebsiteReviews === 'function') {
+              window.refreshWebsiteReviews();
+            }
+          } catch (err) {
+            console.error("Delete review error:", err.message);
+            showToast("Failed to delete review: " + err.message);
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error("Error loading admin reviews:", err.message);
+      if (adminReviewsTableBody) {
+        adminReviewsTableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #ff4757;">Error loading reviews: ${err.message}</td></tr>`;
+      }
+    }
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 })();
 
