@@ -397,8 +397,8 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         email: booking.client_email,
         to_name: booking.client_name,
         client_phone: booking.client_phone,
-        service_type: booking.service,
-        service_brief: booking.brief,
+        service_type: 'Booking Confirmation! 🎉 (' + booking.service + ')',
+        service_brief: 'Selected Service: ' + booking.service + '\nProject Brief: ' + booking.brief + '\nContact Phone: ' + (booking.client_phone || 'N/A'),
         booking_time: new Date().toLocaleString(),
         reply_to: booking.client_email
       };
@@ -1041,8 +1041,8 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
           user_email: targetEmail,
           email: targetEmail,
           otp_code: code,
-          service_type: 'Account Verification',
-          service_brief: code,
+          service_type: 'Account Verification Code 🔐',
+          service_brief: `YOUR 6-DIGIT VERIFICATION CODE IS: ${code}`,
           reply_to: targetEmail
         }).then(() => {
           console.log("Verification OTP email sent via EmailJS.");
