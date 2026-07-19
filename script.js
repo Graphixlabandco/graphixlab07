@@ -799,6 +799,11 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     supabaseClient.auth.onAuthStateChange((event, session) => {
       const user = session?.user || null;
       updateAuthUI(user);
+
+      if (event === 'SIGNED_IN' && window.location.hash.includes('access_token')) {
+        showToast("Email verified successfully! Welcome to Graphix Lab! 🎉");
+        history.replaceState(null, document.title, window.location.pathname + window.location.search);
+      }
     });
   }
 
@@ -901,10 +906,12 @@ const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_U
     submitBtn.innerHTML = 'Signing up...';
 
     try {
+      const redirectUrl = window.location.origin + window.location.pathname;
       const { data, error } = await supabaseClient.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             display_name: email.split('@')[0],
             avatar_seed: 'Riya-' + Math.random().toString(36).substring(2, 8)
