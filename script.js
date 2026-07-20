@@ -845,10 +845,21 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return;
     
-    // Fill forms
-    document.getElementById('profileName').value = user.user_metadata?.display_name || user.email.split('@')[0];
-    document.getElementById('profileEmailDisplay').value = user.email || '';
-    document.getElementById('profilePassword').value = '';
+    // Fill forms safely with optional element checks
+    const profileNameInput = document.getElementById('profileName');
+    const profileEmailInput = document.getElementById('profileEmailDisplay');
+    const profilePasswordInput = document.getElementById('profilePassword');
+    const displayNameText = document.getElementById('userProfileDisplayNameText');
+    const emailText = document.getElementById('userProfileEmailText');
+
+    const displayName = user.user_metadata?.display_name || (user.email ? user.email.split('@')[0] : 'Client');
+    const emailStr = user.email || 'client@example.com';
+
+    if (profileNameInput) profileNameInput.value = displayName;
+    if (profileEmailInput) profileEmailInput.value = emailStr;
+    if (profilePasswordInput) profilePasswordInput.value = '';
+    if (displayNameText) displayNameText.textContent = displayName;
+    if (emailText) emailText.textContent = emailStr;
     
     // Select correct avatar option
     document.querySelectorAll('.avatar-opt').forEach(opt => {
@@ -1351,17 +1362,6 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
       if (otpInput) {
         otpInput.value = '';
         otpInput.focus();
-      }
-    }
-
-    if (supabaseClient) {
-      try {
-        await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: { redirectTo: window.location.origin }
-        });
-      } catch (err) {
-        console.warn("Google OAuth dispatch notice:", err);
       }
     }
   }
