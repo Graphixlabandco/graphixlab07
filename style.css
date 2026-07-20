@@ -2517,11 +2517,13 @@ img { max-width: 100%; display: block; }
    HIGH-PERFORMANCE MOBILE PHONE & TABLET ENGINE
    ══════════════════════════════════════════ */
 @media (max-width: 768px) {
-  /* 1. Prevent Mobile GPU Backdrop-Filter Stutter & Lag */
+  /* 1. Luxurious Frosted Liquid Glass Theme (Desktop & Mobile) */
   .glass-panel, .glass-card, .modal-content, .mobile-menu-inner, .navbar, .chat-panel, .admin-panel-content {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
-    background: rgba(12, 12, 18, 0.95) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
     transform: translateZ(0);
   }
 

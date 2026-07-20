@@ -333,7 +333,11 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
 
     if (flipBtn && inner) {
       flipBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
         // Unflip all other cards first to keep layout clean
         cards.forEach(c => {
           if (c !== card) c.classList.remove('flipped');
@@ -346,6 +350,9 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     const backCard = card.querySelector('.flip-card-back');
     if (backCard && inner) {
       backCard.addEventListener('click', (e) => {
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
         if (e.target.classList.contains('card-book-btn')) return;
         card.classList.remove('flipped');
       });
@@ -355,7 +362,11 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     const bookBtn = card.querySelector('.card-book-btn');
     if (bookBtn) {
       bookBtn.addEventListener('click', (e) => {
+        e.preventDefault();
         e.stopPropagation();
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+          document.activeElement.blur();
+        }
         const serviceId = card.getAttribute('data-service');
         
         // Pre-fill selection dropdown
@@ -371,6 +382,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         if (bookingSection) {
           bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
+        showToast("Service selected! Fill out your commission details below. 🎨");
       });
     }
   });
@@ -1447,20 +1459,45 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     });
   }
 
-  // ── Gear Box User Settings & Orders Portal ──
+  // ── Gear Box User Settings & Orders Portal / Admin Control Panel ──
   const userSettingsModal = document.getElementById('userSettingsModal');
   const userSettingsCloseBtn = document.getElementById('userSettingsCloseBtn');
   const openSettingsPortalBtn = document.getElementById('openSettingsPortalBtn');
 
-  function openUserSettingsPortal() {
+  async function openUserSettingsPortal(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     closeAllModals();
+
+    let currentUser = null;
+    if (supabaseClient) {
+      try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        currentUser = user;
+      } catch (err) {}
+    }
+
+    if (currentUser && isAdminUser(currentUser)) {
+      const adminModal = document.getElementById('adminModal');
+      if (adminModal) {
+        adminModal.classList.add('active');
+        if (typeof loadAdminDashboardData === 'function') loadAdminDashboardData();
+        showToast("⚡ Admin Control Panel Opened!");
+        return;
+      }
+    }
+
     if (userSettingsModal) {
       userSettingsModal.classList.add('active');
       loadUserOrders();
     }
   }
 
-  if (openSettingsPortalBtn) openSettingsPortalBtn.addEventListener('click', openUserSettingsPortal);
+  if (openSettingsPortalBtn) {
+    openSettingsPortalBtn.addEventListener('click', openUserSettingsPortal);
+  }
   if (userSettingsCloseBtn && userSettingsModal) {
     userSettingsCloseBtn.addEventListener('click', () => userSettingsModal.classList.remove('active'));
   }

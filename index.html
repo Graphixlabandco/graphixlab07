@@ -24,9 +24,8 @@
       <button class="menu-btn" id="menuBtn" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
-      <a href="#hero" class="nav-logo">
-        <img src="logo.png" alt="Graphix Lab" class="logo-img-fallback" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-        <span class="logo-icon" style="display: none;">G</span>
+      <a href="#hero" class="nav-logo" style="display: flex; align-items: center; gap: 0.6rem; text-decoration: none;">
+        <img src="logo.png" alt="Graphix Lab Logo" class="logo-img-circular" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--pastel-lavender); box-shadow: 0 0 12px rgba(138,43,226,0.4); display: inline-block; vertical-align: middle;">
         <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
       </a>
     </div>
@@ -340,10 +339,9 @@
     <!-- Contact & Socials Footer -->
     <footer class="footer" data-animate="fade-up">
       <div class="footer-inner">
-        <div class="footer-brand">
-          <img src="logo.png" alt="Graphix Lab" class="logo-img-fallback" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
-          <span class="logo-icon" style="display: none; margin-bottom: 0.3rem;">G</span>
-          <span class="logo-text">GRAPHIX<span class="logo-accent">LAB</span></span>
+        <div class="footer-brand" style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+          <img src="logo.png" alt="Graphix Lab Logo" class="logo-img-circular" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--pastel-lavender); box-shadow: 0 0 16px rgba(138,43,226,0.5); margin-bottom: 0.4rem; display: inline-block;">
+          <span class="logo-text" style="font-size: 1.2rem;">GRAPHIX<span class="logo-accent">LAB</span></span>
           <p class="footer-tagline">Designing Experiences</p>
         </div>
         <div class="footer-links">
