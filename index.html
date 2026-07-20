@@ -454,13 +454,17 @@
       <p class="modal-subtitle">Sign up to commission custom branding and vibe websites</p>
       <form id="signupForm" class="modal-form">
         <div class="form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
           <label for="signupEmail">Email Address</label>
           <input type="email" id="signupEmail" placeholder="you@example.com" required>
         </div>
         <div class="form-group">
           <label for="signupPassword">Password</label>
           <div class="password-input-wrapper">
-            <input type="password" id="signupPassword" placeholder="••••••••" required>
+            <input type="password" id="signupPassword" placeholder="••••••••" required minlength="6">
             <button type="button" class="password-toggle-btn" aria-label="Toggle Password Visibility">
               <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -473,7 +477,7 @@
         <div class="form-group">
           <label for="signupConfirmPassword">Confirm Password</label>
           <div class="password-input-wrapper">
-            <input type="password" id="signupConfirmPassword" placeholder="••••••••" required>
+            <input type="password" id="signupConfirmPassword" placeholder="••••••••" required minlength="6">
             <button type="button" class="password-toggle-btn" aria-label="Toggle Password Visibility">
               <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>

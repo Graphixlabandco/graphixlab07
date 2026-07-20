@@ -988,15 +988,21 @@ let generatedOtpCode = '';
     });
   }
 
-  // Handle Signup (Live Supabase)
+  // Handle Signup (Live Supabase Direct Email & Password)
   signupForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const name = document.getElementById('signupName').value.trim() || 'Client';
     const email = document.getElementById('signupEmail').value.trim();
     const password = document.getElementById('signupPassword').value;
     const confirmPassword = document.getElementById('signupConfirmPassword').value;
 
     if (password !== confirmPassword) {
-      showToast("Passwords don't match!");
+      showToast("Passwords don't match! Please check and try again.");
+      return;
+    }
+
+    if (password.length < 6) {
+      showToast("Password must be at least 6 characters long!");
       return;
     }
 
@@ -1008,7 +1014,7 @@ let generatedOtpCode = '';
     const submitBtn = signupForm.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = 'Signing up...';
+    submitBtn.innerHTML = 'Creating Account...';
 
     try {
       const redirectUrl = window.location.origin + window.location.pathname;
@@ -1018,7 +1024,7 @@ let generatedOtpCode = '';
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            display_name: email.split('@')[0],
+            display_name: name,
             avatar_seed: 'Riya-' + Math.random().toString(36).substring(2, 8)
           }
         }
@@ -1026,28 +1032,32 @@ let generatedOtpCode = '';
 
       if (error) throw error;
 
-      pendingSignupEmail = email;
-      generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      sendOtpViaEmailJS(email, generatedOtpCode);
+      // Auto login check if session exists
+      if (data?.session?.user) {
+        updateAuthUI(data.session.user);
+      } else {
+        try {
+          const loginRes = await supabaseClient.auth.signInWithPassword({ email, password });
+          if (loginRes.data?.session?.user) {
+            updateAuthUI(loginRes.data.session.user);
+          }
+        } catch (autoLoginErr) {}
+      }
 
       closeAllModals();
       signupForm.reset();
-      
-      const otpVerifyModal = document.getElementById('otpVerifyModal') || document.getElementById('verificationModal');
-      if (otpVerifyModal) {
-        const emailText = document.getElementById('otpNoticeEmail') || document.getElementById('verificationEmailText');
-        if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to activate your account:`;
-        otpVerifyModal.classList.add('active');
-        const otpInput = document.getElementById('otpInputCode') || document.getElementById('otpCodeInput');
-        if (otpInput) {
-          otpInput.value = '';
-          otpInput.focus();
-        }
-      }
+      showToast(`Account created successfully! Welcome to Graphix Lab, ${name}! 🎉`);
+
+      // Automatically open User Profile Modal (Option A)
+      setTimeout(() => {
+        if (profileBtn) profileBtn.click();
+      }, 300);
+
     } catch (err) {
       console.error('Signup error:', err.message);
-      if (err.message && err.message.toLowerCase().includes('rate limit')) {
-        showToast("Supabase Email Rate Limit reached (max 4 signup emails per hour). Please wait a few minutes or check your inbox! ⏳");
+      if (err.message && err.message.toLowerCase().includes('user already registered')) {
+        showToast("An account with this email already exists! Please click 'Log in' below.");
+        switchToLogin.click();
       } else {
         showToast(err.message || "Failed to create account.");
       }
@@ -1057,7 +1067,7 @@ let generatedOtpCode = '';
     }
   });
 
-  // Handle Login (Live Supabase)
+  // Handle Login (Live Supabase Direct Email & Password)
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
@@ -1083,26 +1093,19 @@ let generatedOtpCode = '';
 
       closeAllModals();
       loginForm.reset();
-      showToast(`Logged in successfully! Welcome, ${data.user.user_metadata?.display_name || data.user.email.split('@')[0]}!`);
+      const displayName = data.user.user_metadata?.display_name || data.user.email.split('@')[0];
+      showToast(`Logged in successfully! Welcome back, ${displayName}! 🎉`);
+      updateAuthUI(data.user);
+
+      // Automatically open User Profile Modal (Option A)
+      setTimeout(() => {
+        if (profileBtn) profileBtn.click();
+      }, 300);
+
     } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
-        pendingSignupEmail = email;
-        closeAllModals();
-        const otpVerifyModal = document.getElementById('otpVerifyModal');
-        if (otpVerifyModal) {
-          const emailText = document.getElementById('otpNoticeEmail');
-          if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to activate your account:`;
-          otpVerifyModal.classList.add('active');
-          const otpInput = document.getElementById('otpInputCode');
-          if (otpInput) {
-            otpInput.value = '';
-            otpInput.focus();
-          }
-        } else {
-          showToast("Please enter the 6-digit verification code sent to your inbox! ✉️");
-        }
-      } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
-        showToast("Invalid email or password! Please check your details or click 'Forgot Password?' below.");
+      console.error('Login error:', err.message);
+      if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
+        showToast("Invalid email or password! Please check your details or click 'Forgot Password?'.");
       } else {
         showToast(err.message || "Invalid email or password!");
       }
@@ -1356,17 +1359,32 @@ let generatedOtpCode = '';
         if (supabaseClient) {
           try {
             await supabaseClient.auth.updateUser({ password: newPassword });
-          } catch (silentErr) {
-            // Unauthenticated password reset handled smoothly
-          }
+          } catch (silentErr) {}
         }
 
         closeAllModals();
         forgotPasswordResetForm.reset();
+        showToast("Password reset successfully! Logging you in... ✨");
+
+        // Attempt automatic login with new credentials
+        if (supabaseClient && forgotPasswordEmail) {
+          try {
+            const loginRes = await supabaseClient.auth.signInWithPassword({
+              email: forgotPasswordEmail,
+              password: newPassword
+            });
+            if (loginRes.data?.session?.user) {
+              updateAuthUI(loginRes.data.session.user);
+              setTimeout(() => {
+                if (profileBtn) profileBtn.click();
+              }, 300);
+              return;
+            }
+          } catch (loginErr) {}
+        }
+
+        // Fallback to login modal
         document.getElementById('loginEmail').value = forgotPasswordEmail;
-        document.getElementById('loginPassword').value = '';
-        
-        showToast("Password reset successfully! Log in with your new password. ✨");
         if (authModal) {
           authModal.classList.add('active');
           if (loginModalContent) loginModalContent.style.display = 'block';
