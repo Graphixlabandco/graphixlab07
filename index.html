@@ -507,26 +507,16 @@
       <p class="modal-subtitle">Logged in user dashboard & account controls</p>
       
       <div class="profile-pic-section">
-        <div class="profile-avatar-large">
-          <img src="" id="profilePicLarge" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=user';">
+      <div class="profile-pic-section" style="display: flex; flex-direction: column; align-items: center; gap: 0.8rem; margin: 1rem 0;">
+        <div class="profile-avatar-large" style="width: 95px; height: 95px; border-radius: 50%; border: 3px solid #8a2be2; box-shadow: 0 0 25px rgba(138,43,226,0.5); overflow: hidden; background: #110826;">
+          <img src="https://ui-avatars.com/api/?name=GL&background=8a2be2&color=ffffff&size=256&bold=true" id="profilePicLarge" alt="User Monogram" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <div class="avatar-selector">
-          <label style="font-weight: 600; color: var(--pastel-lavender);">Choose Avatar Style:</label>
-          <div class="avatar-options" style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem;">
-            <button type="button" class="avatar-opt active" data-style="adventurer" data-seed="VibeKing">🎨 Artist</button>
-            <button type="button" class="avatar-opt" data-style="micah" data-seed="LuxUser">👑 Luxury</button>
-            <button type="button" class="avatar-opt" data-style="bottts-neutral" data-seed="CyberBot">⚡ Cyber</button>
-            <button type="button" class="avatar-opt" data-style="lorelei" data-seed="DesignGoddess">✨ Creator</button>
-            <button type="button" class="avatar-opt" data-style="fun-emoji" data-seed="CoolVibe">😎 Vibe</button>
-            <button type="button" class="avatar-opt" data-style="avataaars" data-seed="ModernPro">🚀 Pro</button>
-          </div>
-          <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 8px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Upload & Crop
-            </label>
-            <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
-          </div>
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 8px; background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Custom Image
+          </label>
+          <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
         </div>
       </div>
 

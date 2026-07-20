@@ -792,11 +792,34 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   const adminOpenBtn = document.getElementById('adminOpenBtn');
   const adminModal = document.getElementById('adminModal');
 
+  function getInitialsAvatarUrl(name) {
+    if (!name) name = 'User';
+    const cleanName = name.trim();
+    const words = cleanName.split(/\s+/);
+    let initials = '';
+    if (words.length >= 2) {
+      initials = (words[0][0] + words[1][0]).toUpperCase();
+    } else if (cleanName.length >= 2) {
+      initials = cleanName.substring(0, 2).toUpperCase();
+    } else {
+      initials = cleanName.toUpperCase();
+    }
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=8a2be2&color=ffffff&size=256&bold=true&font-size=0.45`;
+  }
+
   function updateAuthUI(user) {
     if (user) {
       authBtn.style.display = 'none';
       profileBtn.style.display = 'inline-flex';
       
+      const displayNameText = document.getElementById('userProfileDisplayNameText');
+      const emailText = document.getElementById('userProfileEmailText');
+      const displayName = user.user_metadata?.display_name || (user.email ? user.email.split('@')[0] : 'User');
+      const userEmailStr = user.email || 'client@example.com';
+
+      if (displayNameText) displayNameText.textContent = displayName;
+      if (emailText) emailText.textContent = userEmailStr;
+
       // Restrict Admin Panel button strictly to authorized admin accounts
       if (adminOpenBtn) {
         if (isAdminUser(user)) {
@@ -806,13 +829,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         }
       }
       
-      const seed = user.user_metadata?.avatar_seed || 'Riya';
       const customUrl = user.user_metadata?.avatar_url;
-      if (customUrl) {
-        navProfilePic.src = customUrl;
-      } else {
-        navProfilePic.src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
-      }
+      const initialsAvatar = getInitialsAvatarUrl(displayName);
+      const finalAvatar = customUrl || initialsAvatar;
+
+      if (navProfilePic) navProfilePic.src = finalAvatar;
+      const profilePicLarge = document.getElementById('profilePicLarge');
+      if (profilePicLarge) profilePicLarge.src = finalAvatar;
     } else {
       authBtn.style.display = 'inline-flex';
       profileBtn.style.display = 'none';
@@ -973,17 +996,16 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
       closeAllModals();
       signupForm.reset();
       
-      if (verificationModal) {
-        const emailText = document.getElementById('verificationEmailText');
-        if (emailText) emailText.textContent = email;
-        verificationModal.classList.add('active');
-        const otpInput = document.getElementById('otpCodeInput');
+      const otpVerifyModal = document.getElementById('otpVerifyModal') || document.getElementById('verificationModal');
+      if (otpVerifyModal) {
+        const emailText = document.getElementById('otpNoticeEmail') || document.getElementById('verificationEmailText');
+        if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to activate your account:`;
+        otpVerifyModal.classList.add('active');
+        const otpInput = document.getElementById('otpInputCode') || document.getElementById('otpCodeInput');
         if (otpInput) {
           otpInput.value = '';
           otpInput.focus();
         }
-      } else {
-        showToast("Account created! Check your email for the 6-digit verification code. ✉️");
       }
     } catch (err) {
       console.error('Signup error:', err.message);
@@ -1043,24 +1065,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
           showToast("Please enter the 6-digit verification code sent to your inbox! ✉️");
         }
       } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
-        // Dispatch 6-digit OTP code so user can verify and access their account immediately!
-        pendingSignupEmail = email;
-        generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-        sendOtpViaEmailJS(email, generatedOtpCode);
-
-        closeAllModals();
-        const otpVerifyModal = document.getElementById('otpVerifyModal');
-        if (otpVerifyModal) {
-          const emailText = document.getElementById('otpNoticeEmail');
-          if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to log in directly:`;
-          otpVerifyModal.classList.add('active');
-          const otpInput = document.getElementById('otpInputCode');
-          if (otpInput) {
-            otpInput.value = '';
-            otpInput.focus();
-          }
-        }
-        showToast("Invalid password! We sent a 6-digit code to your email so you can log in directly. ✉️");
+        showToast("Invalid email or password! Please check your details or click 'Forgot Password?' below.");
       } else {
         showToast(err.message || "Invalid email or password!");
       }
@@ -1122,37 +1127,20 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
 
         if (otpInputElement) otpInputElement.value = '';
 
-        // 1. Verification Match
+        // Verification Match -> Redirect to Login Portal as requested
         closeAllModals();
         if (signupForm) signupForm.reset();
-        if (loginForm) loginForm.reset();
+        
+        const loginEmailInput = document.getElementById('loginEmail');
+        if (loginEmailInput) loginEmailInput.value = targetEmail;
 
-        const userDisplayName = targetEmail ? targetEmail.split('@')[0] : 'Client';
-        const userAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=VibeKing`;
-
-        const userObj = {
-          email: targetEmail,
-          user_metadata: {
-            display_name: userDisplayName,
-            avatar_url: userAvatarUrl
-          }
-        };
-
-        updateAuthUI(userObj);
-
-        showToast(`Account verified successfully! Welcome, ${userDisplayName}! 🎉`);
+        showToast("Email verified successfully! Please log in with your email & password to access your profile. 🔐");
 
         setTimeout(() => {
-          const profileModal = document.getElementById('profileModal');
-          if (profileModal) {
-            const displayNameText = document.getElementById('userProfileDisplayNameText');
-            const emailText = document.getElementById('userProfileEmailText');
-            const profilePicLarge = document.getElementById('profilePicLarge');
-
-            if (displayNameText) displayNameText.textContent = userDisplayName;
-            if (emailText) emailText.textContent = targetEmail;
-            if (profilePicLarge) profilePicLarge.src = userAvatarUrl;
-            profileModal.classList.add('active');
+          if (authModal) {
+            authModal.classList.add('active');
+            if (loginModalContent) loginModalContent.style.display = 'block';
+            if (signupModalContent) signupModalContent.style.display = 'none';
           }
         }, 150);
       } catch (err) {
