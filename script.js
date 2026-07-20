@@ -876,8 +876,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   });
 
   profileBtn.addEventListener('click', async () => {
-    if (!supabaseClient) return;
-    const { data: { user } } = await supabaseClient.auth.getUser();
+    let user = localAuthState;
+    if (supabaseClient) {
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) user = session.user;
+      } catch (e) {}
+    }
     if (!user) return;
     
     // Fill forms safely with optional element checks
@@ -1471,11 +1476,11 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     }
     closeAllModals();
 
-    let currentUser = null;
+    let currentUser = localAuthState;
     if (supabaseClient) {
       try {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        currentUser = user;
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session?.user) currentUser = session.user;
       } catch (err) {}
     }
 
@@ -1525,7 +1530,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     if (!supabaseClient) return;
 
     try {
-      const { data: { user } } = await supabaseClient.auth.getUser();
+      let user = localAuthState;
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session?.user) user = session.user;
+        } catch (e) {}
+      }
       const userEmail = user ? user.email : '';
       const userProfileEmailInput = document.getElementById('userProfileEmailInput');
       const userProfileNameInput = document.getElementById('userProfileNameInput');
@@ -1598,7 +1609,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         try {
           await supabaseClient.auth.updateUser(updateData);
           showToast("Profile settings updated successfully! ✨");
-          const { data: { user } } = await supabaseClient.auth.getUser();
+          let user = localAuthState;
+          if (supabaseClient) {
+            try {
+              const { data: { session } } = await supabaseClient.auth.getSession();
+              if (session?.user) user = session.user;
+            } catch (e) {}
+          }
           updateAuthUI(user);
         } catch (err) {
           showToast(err.message || "Updated profile details!");
@@ -1621,14 +1638,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     }
   });
 
-  // Trigger initial UI sync safely
+  // Trigger initial UI sync safely without unauthenticated 403 calls
   if (supabaseClient) {
-    supabaseClient.auth.getUser()
-      .then(({ data: { user } }) => updateAuthUI(user))
-      .catch((err) => {
-        console.warn("Initial session restoration fallback:", err);
-        updateAuthUI(null);
-      });
+    supabaseClient.auth.getSession()
+      .then(({ data: { session } }) => updateAuthUI(session?.user || localAuthState))
+      .catch(() => updateAuthUI(localAuthState));
+  } else {
+    updateAuthUI(localAuthState);
   }
 })();
 
@@ -1679,8 +1695,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   // Open & Close Admin Modal
   if (adminOpenBtn) {
     adminOpenBtn.addEventListener('click', async () => {
-      if (!supabaseClient) return;
-      const { data: { user } } = await supabaseClient.auth.getUser();
+      let user = localAuthState;
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session?.user) user = session.user;
+        } catch (e) {}
+      }
       if (!user || (!user.email || !user.email.toLowerCase().includes('graphixlab07@gmail.com')) && !user.user_metadata?.is_admin) {
         showToast("Access Denied: Admin privileges required. 🔒");
         return;
@@ -2052,7 +2073,13 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   async function logChatMessage(sender, text) {
     if (!supabaseClient) return;
     try {
-      const { data: { user } } = await supabaseClient.auth.getUser();
+      let user = localAuthState;
+      if (supabaseClient) {
+        try {
+          const { data: { session } } = await supabaseClient.auth.getSession();
+          if (session?.user) user = session.user;
+        } catch (e) {}
+      }
       await supabaseClient.from('chat_messages').insert([{
         user_email: user ? user.email : null,
         session_id: sessionId,
