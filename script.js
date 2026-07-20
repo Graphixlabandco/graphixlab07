@@ -8,12 +8,17 @@ const SUPABASE_URL = "https://xjpirlckvvqjoorzxheq.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqcGlybGNrdnZxam9vcnp4aGVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4NDI3OTgsImV4cCI6MjA5OTQxODc5OH0.B9Dx8wNQeqrttTFLUY3jvMugtaH4wqMZ3n2EVAIzLGk";
 const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
-// ── Global EmailJS Configuration ──
+// ── Global Auth & EmailJS Configuration ──
 const EMAILJS_PUBLIC_KEY = "k2i_99oMeHEmqiILD";
 const EMAILJS_SERVICE_ID = "service_pv3yvv6";
 const EMAILJS_TEMPLATE_CLIENT = "template_phjjh04"; // Customer booking confirmation template
 const EMAILJS_TEMPLATE_ADMIN = "template_tlfwwu2";  // Admin booking notification template
-const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP verification template (Update to new template ID when created)
+const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP verification template
+
+let localAuthState = null;
+let localUploadedUrl = null;
+let pendingSignupEmail = '';
+let generatedOtpCode = '';
 
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
@@ -820,6 +825,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   }
 
   function updateAuthUI(user) {
+    localAuthState = user;
     if (user) {
       authBtn.style.display = 'none';
       profileBtn.style.display = 'inline-flex';
