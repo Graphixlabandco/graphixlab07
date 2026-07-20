@@ -1001,15 +1001,15 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
       loginForm.reset();
       showToast(`Logged in successfully! Welcome, ${data.user.user_metadata?.display_name || data.user.email.split('@')[0]}!`);
     } catch (err) {
-      console.error('Login error:', err.message);
       if (err.message && err.message.toLowerCase().includes('email not confirmed')) {
         pendingSignupEmail = email;
         closeAllModals();
-        if (verificationModal) {
-          const emailText = document.getElementById('verificationEmailText');
-          if (emailText) emailText.textContent = email;
-          verificationModal.classList.add('active');
-          const otpInput = document.getElementById('otpCodeInput');
+        const otpVerifyModal = document.getElementById('otpVerifyModal');
+        if (otpVerifyModal) {
+          const emailText = document.getElementById('otpNoticeEmail');
+          if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to activate your account:`;
+          otpVerifyModal.classList.add('active');
+          const otpInput = document.getElementById('otpInputCode');
           if (otpInput) {
             otpInput.value = '';
             otpInput.focus();
@@ -1018,7 +1018,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
           showToast("Please enter the 6-digit verification code sent to your inbox! ✉️");
         }
       } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
-        showToast("Invalid email or password! If you don't have an account yet, please click 'Sign up' to create one.");
+        showToast("Invalid email or password! Please check your details or click 'Forgot Password?' below.");
       } else {
         showToast(err.message || "Invalid email or password!");
       }
@@ -2019,6 +2019,7 @@ Instructions:
 - Use emojis, bold formatting, and clear structured paragraphs when helpful.`;
 
   async function fetchLiveAIResponse(userText) {
+    if (window.puter) window.puter.quiet = true;
     // 1. Try Puter.js Online AI Engine (GPT-4o-mini / Llama 3)
     if (window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
       try {
