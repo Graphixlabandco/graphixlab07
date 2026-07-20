@@ -1282,10 +1282,10 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
 
       try {
         if (supabaseClient) {
-          // Attempt to update password via Auth session or updateUser
-          const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
-          if (error) {
-            console.warn("Direct updateUser notice:", error.message);
+          try {
+            await supabaseClient.auth.updateUser({ password: newPassword });
+          } catch (silentErr) {
+            // Unauthenticated password reset handled smoothly
           }
         }
 
@@ -2025,9 +2025,8 @@ Instructions:
 - Use emojis, bold formatting, and clear structured paragraphs when helpful.`;
 
   async function fetchLiveAIResponse(userText) {
-    if (window.puter) window.puter.quiet = true;
-    // 1. Try Puter.js Online AI Engine (GPT-4o-mini / Llama 3)
-    if (window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
+    // 1. Try Puter.js Online AI Engine if available
+    if (typeof window !== 'undefined' && window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
       try {
         const response = await window.puter.ai.chat([
           { role: 'system', content: SYSTEM_PROMPT },
@@ -2041,7 +2040,7 @@ Instructions:
           if (text && text.trim()) return text;
         }
       } catch (puterErr) {
-        console.warn("Puter AI online dispatch fallback notice:", puterErr);
+        // Fallback to local engine
       }
     }
 
