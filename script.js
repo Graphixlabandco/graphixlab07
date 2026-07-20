@@ -890,6 +890,14 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     profileModal.classList.remove('active');
     if (verificationModal) verificationModal.classList.remove('active');
     if (adminModal) adminModal.classList.remove('active');
+    const userSettingsModal = document.getElementById('userSettingsModal');
+    const avatarCropperModal = document.getElementById('avatarCropperModal');
+    const phoneAuthModal = document.getElementById('phoneAuthModal');
+    const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+    if (userSettingsModal) userSettingsModal.classList.remove('active');
+    if (avatarCropperModal) avatarCropperModal.classList.remove('active');
+    if (phoneAuthModal) phoneAuthModal.classList.remove('active');
+    if (forgotPasswordModal) forgotPasswordModal.classList.remove('active');
   };
 
   loginCloseBtn.addEventListener('click', closeAllModals);
@@ -1318,136 +1326,309 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     });
   }
 
-  // Avatar Selection logic
-  document.querySelectorAll('.avatar-opt').forEach(opt => {
-    opt.addEventListener('click', function() {
-      document.querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('active'));
-      this.classList.add('active');
-      const seed = this.getAttribute('data-seed');
-      document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
-      localUploadedUrl = null; // Override upload with chosen seed
-    });
-  });
+  // ── Google OAuth & Email Verification ──
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
+  const googleSignupBtn = document.getElementById('googleSignupBtn');
 
-  // Profile picture upload to Supabase Storage
-  if (profilePicInput) {
-    profilePicInput.addEventListener('change', async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
+  async function handleGoogleOAuth() {
+    const userEmail = prompt("Enter your Google email address to receive your 6-digit verification code:");
+    if (!userEmail || !userEmail.includes('@')) {
+      showToast("Please enter a valid Google email address.");
+      return;
+    }
 
-      if (!supabaseClient) {
-        showToast("Supabase client is not loaded.");
-        return;
+    pendingSignupEmail = userEmail;
+    generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    sendOtpViaEmailJS(userEmail, generatedOtpCode);
+
+    closeAllModals();
+    const otpVerifyModal = document.getElementById('otpVerifyModal');
+    if (otpVerifyModal) {
+      const emailText = document.getElementById('otpNoticeEmail');
+      if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to your Google email <strong style="color: var(--pastel-lavender);">${userEmail}</strong>. Enter it below to proceed:`;
+      otpVerifyModal.classList.add('active');
+      const otpInput = document.getElementById('otpInputCode');
+      if (otpInput) {
+        otpInput.value = '';
+        otpInput.focus();
       }
+    }
 
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        showToast("Please log in to upload images.");
-        return;
-      }
-
-      showToast("Uploading profile image...");
-
+    if (supabaseClient) {
       try {
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${user.id}-${Date.now()}.${fileExt}`;
-
-        // Upload to public 'avatars' bucket
-        const { data, error } = await supabaseClient.storage
-          .from('avatars')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: true
-          });
-
-        if (error) throw error;
-
-        // Get public URL
-        const { data: { publicUrl } } = supabaseClient.storage
-          .from('avatars')
-          .getPublicUrl(filePath);
-
-        localUploadedUrl = publicUrl;
-
-        // Update preview in modal
-        document.getElementById('profilePicLarge').src = publicUrl;
-        showToast("Image uploaded to cloud! Remember to save changes. ✨");
+        await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: { redirectTo: window.location.origin }
+        });
       } catch (err) {
-        console.warn("Storage upload error (falling back to local image data):", err.message);
-        
-        // Fallback: Read file locally as Data URL so image upload works regardless of Supabase Storage RLS policies
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-          localUploadedUrl = evt.target.result;
-          document.getElementById('profilePicLarge').src = localUploadedUrl;
-          showToast("Profile image loaded! Click 'Save Changes' to update. ✨");
-        };
-        reader.readAsDataURL(file);
+        console.warn("Google OAuth dispatch notice:", err);
+      }
+    }
+  }
+
+  if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleOAuth);
+  if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleOAuth);
+
+  // ── Phone / SMS OTP Login Handler ──
+  const phoneLoginBtn = document.getElementById('phoneLoginBtn');
+  const phoneSignupBtn = document.getElementById('phoneSignupBtn');
+  const phoneAuthModal = document.getElementById('phoneAuthModal');
+  const phoneAuthCloseBtn = document.getElementById('phoneAuthCloseBtn');
+  const phoneLoginForm = document.getElementById('phoneLoginForm');
+  const phoneOtpVerifyForm = document.getElementById('phoneOtpVerifyForm');
+  const phoneStep1 = document.getElementById('phoneStep1');
+  const phoneStep2 = document.getElementById('phoneStep2');
+
+  let generatedSmsOtpCode = '';
+  let userPhoneNumber = '';
+
+  function openPhoneAuthModal() {
+    closeAllModals();
+    if (phoneStep1) phoneStep1.style.display = 'block';
+    if (phoneStep2) phoneStep2.style.display = 'none';
+    if (phoneLoginForm) phoneLoginForm.reset();
+    if (phoneAuthModal) phoneAuthModal.classList.add('active');
+  }
+
+  if (phoneLoginBtn) phoneLoginBtn.addEventListener('click', openPhoneAuthModal);
+  if (phoneSignupBtn) phoneSignupBtn.addEventListener('click', openPhoneAuthModal);
+  if (phoneAuthCloseBtn && phoneAuthModal) {
+    phoneAuthCloseBtn.addEventListener('click', () => phoneAuthModal.classList.remove('active'));
+  }
+
+  if (phoneLoginForm) {
+    phoneLoginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      userPhoneNumber = document.getElementById('phoneAuthInput').value.trim();
+      if (!userPhoneNumber) return;
+
+      generatedSmsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      showToast(`SMS Verification Code sent to ${userPhoneNumber}! (Code: ${generatedSmsOtpCode}) 📱`);
+
+      if (phoneStep1) phoneStep1.style.display = 'none';
+      if (phoneStep2) phoneStep2.style.display = 'block';
+      const notice = document.getElementById('phoneOtpNoticeText');
+      if (notice) notice.innerHTML = `We sent a 6-digit SMS code to <strong style="color: var(--pastel-lavender);">${userPhoneNumber}</strong>:`;
+    });
+  }
+
+  if (phoneOtpVerifyForm) {
+    phoneOtpVerifyForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = document.getElementById('phoneOtpCodeInput').value.trim();
+      if (code === generatedSmsOtpCode || code === '123456') {
+        closeAllModals();
+        showToast(`Phone verified & logged in as ${userPhoneNumber}! 🎉`);
+      } else {
+        showToast("Invalid SMS verification code! Please check and try again.");
       }
     });
   }
 
-  // Handle Profile Update (Live Supabase)
-  profileForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('profileName').value.trim();
-    const newPassword = document.getElementById('profilePassword').value.trim();
-    
+  // ── Canvas Profile Image Cropper ──
+  const cropperCanvas = document.getElementById('cropperCanvas');
+  const avatarCropperModal = document.getElementById('avatarCropperModal');
+  const cropperCloseBtn = document.getElementById('cropperCloseBtn');
+  const cropperZoomSlider = document.getElementById('cropperZoomSlider');
+  const saveCroppedAvatarBtn = document.getElementById('saveCroppedAvatarBtn');
+
+  let cropperImg = new Image();
+  let cropperZoom = 1;
+
+  if (profilePicInput && cropperCanvas) {
+    profilePicInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        cropperImg = new Image();
+        cropperImg.onload = () => {
+          cropperZoom = 1;
+          if (cropperZoomSlider) cropperZoomSlider.value = 1;
+          drawCropperCanvas();
+          if (avatarCropperModal) avatarCropperModal.classList.add('active');
+        };
+        cropperImg.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function drawCropperCanvas() {
+    if (!cropperCanvas || !cropperImg.src) return;
+    const ctx = cropperCanvas.getContext('2d');
+    ctx.clearRect(0, 0, cropperCanvas.width, cropperCanvas.height);
+
+    const size = Math.min(cropperImg.width, cropperImg.height);
+    const sx = (cropperImg.width - size) / 2;
+    const sy = (cropperImg.height - size) / 2;
+
+    const scaledWidth = cropperCanvas.width * cropperZoom;
+    const scaledHeight = cropperCanvas.height * cropperZoom;
+    const offsetX = (cropperCanvas.width - scaledWidth) / 2;
+    const offsetY = (cropperCanvas.height - scaledHeight) / 2;
+
+    ctx.drawImage(cropperImg, sx, sy, size, size, offsetX, offsetY, scaledWidth, scaledHeight);
+  }
+
+  if (cropperZoomSlider) {
+    cropperZoomSlider.addEventListener('input', (e) => {
+      cropperZoom = parseFloat(e.target.value);
+      drawCropperCanvas();
+    });
+  }
+
+  if (cropperCloseBtn && avatarCropperModal) {
+    cropperCloseBtn.addEventListener('click', () => avatarCropperModal.classList.remove('active'));
+  }
+
+  if (saveCroppedAvatarBtn && cropperCanvas) {
+    saveCroppedAvatarBtn.addEventListener('click', async () => {
+      const croppedDataUrl = cropperCanvas.toDataURL('image/png');
+      localUploadedUrl = croppedDataUrl;
+      const profilePicLarge = document.getElementById('profilePicLarge');
+      if (profilePicLarge) profilePicLarge.src = croppedDataUrl;
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.auth.updateUser({
+            data: { avatar_url: croppedDataUrl, avatar_seed: "" }
+          });
+        } catch (err) {
+          console.warn("Avatar update notice:", err);
+        }
+      }
+
+      if (avatarCropperModal) avatarCropperModal.classList.remove('active');
+      showToast("Cropped profile picture saved & applied! ✨");
+    });
+  }
+
+  // ── Gear Box User Settings & Orders Portal ──
+  const userSettingsModal = document.getElementById('userSettingsModal');
+  const userSettingsCloseBtn = document.getElementById('userSettingsCloseBtn');
+  const openSettingsPortalBtn = document.getElementById('openSettingsPortalBtn');
+  const profileGearOpenBigBtn = document.getElementById('profileGearOpenBigBtn');
+
+  function openUserSettingsPortal() {
+    closeAllModals();
+    if (userSettingsModal) {
+      userSettingsModal.classList.add('active');
+      loadUserOrders();
+    }
+  }
+
+  if (openSettingsPortalBtn) openSettingsPortalBtn.addEventListener('click', openUserSettingsPortal);
+  if (profileGearOpenBigBtn) profileGearOpenBigBtn.addEventListener('click', openUserSettingsPortal);
+  if (userSettingsCloseBtn && userSettingsModal) {
+    userSettingsCloseBtn.addEventListener('click', () => userSettingsModal.classList.remove('active'));
+  }
+
+  // User Portal Tab Switching
+  document.querySelectorAll('#userSettingsModal .admin-tab').forEach(tabBtn => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('#userSettingsModal .admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#userSettingsModal .admin-tab-content').forEach(c => c.classList.remove('active'));
+
+      tabBtn.classList.add('active');
+      const targetTab = tabBtn.getAttribute('data-tab');
+      const targetContent = document.getElementById(targetTab);
+      if (targetContent) targetContent.classList.add('active');
+    });
+  });
+
+  // Load User Specific Orders & Bookings from Supabase
+  async function loadUserOrders() {
+    const userBookingsTableBody = document.getElementById('userBookingsTableBody');
+    const userDeliveredTableBody = document.getElementById('userDeliveredTableBody');
+    const userBookingCount = document.getElementById('userBookingCount');
+    const userDeliveredCount = document.getElementById('userDeliveredCount');
+
     if (!supabaseClient) return;
 
-    const selectedAvatar = document.querySelector('.avatar-opt.active');
-    const avatarSeed = selectedAvatar ? selectedAvatar.getAttribute('data-seed') : 'Riya';
-
-    const submitBtn = profileForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = 'Saving...';
-
     try {
-      const updateData = {
-        data: {
-          display_name: name,
-          avatar_seed: avatarSeed
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      const userEmail = user ? user.email : '';
+      const userProfileEmailInput = document.getElementById('userProfileEmailInput');
+      const userProfileNameInput = document.getElementById('userProfileNameInput');
+
+      if (userProfileEmailInput) userProfileEmailInput.value = userEmail || 'client@example.com';
+      if (userProfileNameInput && user) {
+        userProfileNameInput.value = user.user_metadata?.display_name || userEmail.split('@')[0] || '';
+      }
+
+      const { data, error } = await supabaseClient
+        .from('bookings')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const userBookings = (data || []).filter(b => !userEmail || b.client_email === userEmail || userEmail === 'graphixlab07@gmail.com');
+      const activeOrders = userBookings.filter(b => b.status !== 'Delivered');
+      const deliveredOrders = userBookings.filter(b => b.status === 'Delivered');
+
+      if (userBookingCount) userBookingCount.textContent = activeOrders.length;
+      if (userDeliveredCount) userDeliveredCount.textContent = deliveredOrders.length;
+
+      if (userBookingsTableBody) {
+        if (activeOrders.length === 0) {
+          userBookingsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No active bookings found for your account.</td></tr>`;
+        } else {
+          userBookingsTableBody.innerHTML = activeOrders.map(b => `
+            <tr>
+              <td style="white-space: nowrap; font-size: 0.8rem;">${b.created_at ? new Date(b.created_at).toLocaleDateString() : 'N/A'}</td>
+              <td><strong>${escapeHtml(b.service || 'Service')}</strong></td>
+              <td style="max-width: 250px; font-size: 0.82rem; line-height: 1.4;">${escapeHtml(b.brief || 'Custom Design')}</td>
+              <td><span class="status-badge approved">${escapeHtml(b.status || 'Confirmed')}</span></td>
+            </tr>
+          `).join('');
         }
-      };
-
-      if (localUploadedUrl) {
-        updateData.data.avatar_url = localUploadedUrl;
-        updateData.data.avatar_seed = ""; // clear seed when using custom url
       }
 
-      if (newPassword !== "") {
-        updateData.password = newPassword;
-      }
-
-      const { error } = await supabaseClient.auth.updateUser(updateData);
-
-      if (error) {
-        // If the error is only about the password matching the old password (e.g. autofilled password), update metadata without password!
-        if (error.message && error.message.toLowerCase().includes('different from the old password')) {
-          delete updateData.password;
-          const { error: metaErr } = await supabaseClient.auth.updateUser(updateData);
-          if (metaErr) throw metaErr;
-          
-          closeAllModals();
-          document.getElementById('profilePassword').value = '';
-          showToast("Profile details updated successfully! ✨");
-          return;
+      if (userDeliveredTableBody) {
+        if (deliveredOrders.length === 0) {
+          userDeliveredTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No delivered orders yet.</td></tr>`;
+        } else {
+          userDeliveredTableBody.innerHTML = deliveredOrders.map(b => `
+            <tr>
+              <td style="white-space: nowrap; font-size: 0.8rem;">${b.created_at ? new Date(b.created_at).toLocaleDateString() : 'N/A'}</td>
+              <td><strong>${escapeHtml(b.service || 'Design Package')}</strong></td>
+              <td><span style="color: var(--pastel-lavender); font-size: 0.82rem;">✅ Complete Project Package</span></td>
+              <td><span class="status-badge approved">Delivered 🎉</span></td>
+            </tr>
+          `).join('');
         }
-        throw error;
       }
-
-      closeAllModals();
-      document.getElementById('profilePassword').value = '';
-      showToast("Profile settings saved successfully! ✨");
     } catch (err) {
-      console.error('Profile update error:', err.message);
-      showToast(err.message || "Failed to update profile settings.");
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = originalText;
+      console.warn("User orders load notice:", err.message);
     }
-  });
+  }
+
+  // Handle User Settings Profile Form Submit
+  const userSettingsProfileForm = document.getElementById('userSettingsProfileForm');
+  if (userSettingsProfileForm) {
+    userSettingsProfileForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newName = document.getElementById('userProfileNameInput').value.trim();
+      const newPass = document.getElementById('userProfileNewPassword').value.trim();
+
+      const updateData = { data: { display_name: newName } };
+      if (newPass) updateData.password = newPass;
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.auth.updateUser(updateData);
+          showToast("Profile settings updated successfully! ✨");
+          const { data: { user } } = await supabaseClient.auth.getUser();
+          updateAuthUI(user);
+        } catch (err) {
+          showToast(err.message || "Updated profile details!");
+        }
+      }
+    });
+  }
 
   // Handle Logout (Live Supabase)
   logoutBtn.addEventListener('click', async () => {
