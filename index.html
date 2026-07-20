@@ -449,13 +449,9 @@
       </form>
       <div class="social-auth-divider"><span>OR CONTINUE WITH</span></div>
       <div class="social-auth-buttons">
-        <button type="button" class="social-btn google-auth-btn" id="googleLoginBtn">
+        <button type="button" class="social-btn google-auth-btn" id="googleLoginBtn" style="width: 100%;">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          Google
-        </button>
-        <button type="button" class="social-btn phone-auth-btn" id="phoneLoginBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Phone SMS
+          Continue with Google
         </button>
       </div>
       <p class="modal-switch" style="margin-top: 1rem;">Don't have an account? <a href="#" id="switchToSignup">Sign up</a></p>
@@ -500,13 +496,9 @@
       </form>
       <div class="social-auth-divider"><span>OR SIGN UP WITH</span></div>
       <div class="social-auth-buttons">
-        <button type="button" class="social-btn google-auth-btn" id="googleSignupBtn">
+        <button type="button" class="social-btn google-auth-btn" id="googleSignupBtn" style="width: 100%;">
           <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
-          Google
-        </button>
-        <button type="button" class="social-btn phone-auth-btn" id="phoneSignupBtn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-          Phone SMS
+          Sign Up with Google
         </button>
       </div>
       <p class="modal-switch" style="margin-top: 1rem;">Already have an account? <a href="#" id="switchToLogin">Log in</a></p>
@@ -555,11 +547,6 @@
         <h3 id="userProfileDisplayNameText" style="font-size: 1.3rem; margin: 0.3rem 0; color: #fff;">Client</h3>
         <p id="userProfileEmailText" style="font-size: 0.88rem; color: var(--text-secondary); margin: 0; font-family: monospace;">client@example.com</p>
       </div>
-
-      <button type="button" class="submit-btn" id="profileGearOpenBigBtn" style="background: rgba(138, 43, 226, 0.2); border: 1px solid #8a2be2; color: #fff; width: 100%; margin-bottom: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-        ⚙️ Open User Settings & Orders Portal
-      </button>
 
       <button type="button" class="submit-btn admin-open-btn" id="adminOpenBtn" style="background: var(--gradient-primary); color: #fff; width: 100%; margin-bottom: 0.8rem; display: none;">⚡ Open Admin Dashboard</button>
       <button class="submit-btn logout-btn" id="logoutBtn" style="background: var(--gradient-accent); color: #fff; width: 100%;">Log Out</button>
@@ -666,41 +653,6 @@
       </div>
 
       <button type="button" class="submit-btn" id="saveCroppedAvatarBtn" style="width: 100%;">Save & Apply Profile Picture</button>
-    </div>
-  </div>
-
-  <!-- ══════════════ PHONE / SMS AUTH MODAL ══════════════ -->
-  <div class="modal-overlay" id="phoneAuthModal">
-    <div class="modal-content glass-panel" style="max-width: 440px;">
-      <button class="modal-close" id="phoneAuthCloseBtn">&times;</button>
-      
-      <div id="phoneStep1">
-        <h2>SMS Phone Login 📱</h2>
-        <p class="modal-subtitle">Enter your mobile number to receive a 6-digit SMS verification code.</p>
-        <form id="phoneLoginForm" class="modal-form">
-          <div class="form-group">
-            <label for="phoneAuthInput">Mobile Number (India 🇮🇳 +91)</label>
-            <div style="display: flex; gap: 0.5rem; align-items: center;">
-              <input type="text" value="+91" readonly style="width: 70px; text-align: center; font-weight: 700; color: var(--pastel-lavender); background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4); border-radius: 8px;">
-              <input type="tel" id="phoneAuthInput" placeholder="9876543210" required maxlength="10" pattern="[0-9]{10}" style="letter-spacing: 1.5px; font-weight: 700; flex: 1;">
-            </div>
-          </div>
-          <button type="submit" class="submit-btn" style="width: 100%;">Send Official 6-Digit SMS OTP</button>
-        </form>
-      </div>
-
-      <div id="phoneStep2" style="display: none;">
-        <h2>Verify SMS Code 📩</h2>
-        <p class="modal-subtitle" id="phoneOtpNoticeText">We sent a 6-digit code to your phone. Enter it below to verify:</p>
-        <form id="phoneOtpVerifyForm" class="modal-form">
-          <div class="form-group">
-            <label for="phoneOtpCodeInput">6-Digit SMS Code</label>
-            <input type="text" id="phoneOtpCodeInput" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required style="font-size: 1.8rem; letter-spacing: 8px; font-weight: 800; text-align: center; font-family: monospace;">
-          </div>
-          <button type="submit" class="submit-btn" style="width: 100%;">Verify & Log In</button>
-        </form>
-      </div>
-
     </div>
   </div>
 

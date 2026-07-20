@@ -1372,74 +1372,6 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleOAuth);
   if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleOAuth);
 
-  // ── Phone / SMS OTP Login Handler ──
-  const phoneLoginBtn = document.getElementById('phoneLoginBtn');
-  const phoneSignupBtn = document.getElementById('phoneSignupBtn');
-  const phoneAuthModal = document.getElementById('phoneAuthModal');
-  const phoneAuthCloseBtn = document.getElementById('phoneAuthCloseBtn');
-  const phoneLoginForm = document.getElementById('phoneLoginForm');
-  const phoneOtpVerifyForm = document.getElementById('phoneOtpVerifyForm');
-  const phoneStep1 = document.getElementById('phoneStep1');
-  const phoneStep2 = document.getElementById('phoneStep2');
-
-  let generatedSmsOtpCode = '';
-  let userPhoneNumber = '';
-
-  function openPhoneAuthModal() {
-    closeAllModals();
-    if (phoneStep1) phoneStep1.style.display = 'block';
-    if (phoneStep2) phoneStep2.style.display = 'none';
-    if (phoneLoginForm) phoneLoginForm.reset();
-    if (phoneAuthModal) phoneAuthModal.classList.add('active');
-  }
-
-  if (phoneLoginBtn) phoneLoginBtn.addEventListener('click', openPhoneAuthModal);
-  if (phoneSignupBtn) phoneSignupBtn.addEventListener('click', openPhoneAuthModal);
-  if (phoneAuthCloseBtn && phoneAuthModal) {
-    phoneAuthCloseBtn.addEventListener('click', () => phoneAuthModal.classList.remove('active'));
-  }
-
-  if (phoneLoginForm) {
-    phoneLoginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const rawNumber = document.getElementById('phoneAuthInput').value.trim();
-      if (!rawNumber || rawNumber.length < 10) {
-        showToast("Please enter a valid 10-digit Indian mobile number!");
-        return;
-      }
-
-      userPhoneNumber = "+91 " + rawNumber;
-      generatedSmsOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // Dispatch SMS OTP Notice / EmailJS backup
-      sendOtpViaEmailJS(`phone_${rawNumber}@graphixlab.com`, generatedSmsOtpCode);
-      showToast(`Official 6-Digit SMS OTP generated & dispatched to ${userPhoneNumber}! (OTP: ${generatedSmsOtpCode}) 📱`);
-
-      if (phoneStep1) phoneStep1.style.display = 'none';
-      if (phoneStep2) phoneStep2.style.display = 'block';
-      const notice = document.getElementById('phoneOtpNoticeText');
-      if (notice) notice.innerHTML = `We sent an official 6-digit SMS OTP to <strong style="color: var(--pastel-lavender);">${userPhoneNumber}</strong>. Enter it below to activate your account:`;
-      const phoneOtpInput = document.getElementById('phoneOtpCodeInput');
-      if (phoneOtpInput) {
-        phoneOtpInput.value = '';
-        phoneOtpInput.focus();
-      }
-    });
-  }
-
-  if (phoneOtpVerifyForm) {
-    phoneOtpVerifyForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const code = document.getElementById('phoneOtpCodeInput').value.trim();
-      if (code === generatedSmsOtpCode || code === '123456') {
-        closeAllModals();
-        showToast(`Mobile number ${userPhoneNumber} verified successfully! Welcome to Graphix Lab! 🎉`);
-      } else {
-        showToast("Invalid SMS verification code! Please check your mobile inbox and try again.");
-      }
-    });
-  }
-
   // ── Canvas Profile Image Cropper ──
   const cropperCanvas = document.getElementById('cropperCanvas');
   const avatarCropperModal = document.getElementById('avatarCropperModal');
@@ -1524,7 +1456,6 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   const userSettingsModal = document.getElementById('userSettingsModal');
   const userSettingsCloseBtn = document.getElementById('userSettingsCloseBtn');
   const openSettingsPortalBtn = document.getElementById('openSettingsPortalBtn');
-  const profileGearOpenBigBtn = document.getElementById('profileGearOpenBigBtn');
 
   function openUserSettingsPortal() {
     closeAllModals();
@@ -1535,7 +1466,6 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   }
 
   if (openSettingsPortalBtn) openSettingsPortalBtn.addEventListener('click', openUserSettingsPortal);
-  if (profileGearOpenBigBtn) profileGearOpenBigBtn.addEventListener('click', openUserSettingsPortal);
   if (userSettingsCloseBtn && userSettingsModal) {
     userSettingsCloseBtn.addEventListener('click', () => userSettingsModal.classList.remove('active'));
   }
