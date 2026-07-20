@@ -441,6 +441,9 @@
               </svg>
             </button>
           </div>
+          <div style="text-align: right; margin-top: 0.4rem; margin-bottom: 0.8rem;">
+            <a href="#" id="forgotPasswordLink" style="font-size: 0.82rem; color: var(--pastel-lavender); text-decoration: none; transition: opacity 0.2s;">Forgot Password?</a>
+          </div>
         </div>
         <button type="submit" class="submit-btn" style="width: 100%;">Login</button>
       </form>
@@ -558,24 +561,81 @@
     </div>
   </div>
 
-  <!-- ══════════════ VERIFICATION MODAL (6-DIGIT OTP) ══════════════ -->
-  <div class="modal-overlay" id="verificationModal">
-    <div class="modal-content glass-panel" style="text-align: center; max-width: 440px; padding: 2.5rem; position: relative;">
-      <button class="modal-close" id="verificationCloseBtn">&times;</button>
-      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔐</div>
-      <h2 style="font-family: var(--font-display); font-weight: 800; margin-bottom: 0.5rem;">Enter Verification Code</h2>
-      <p style="color: var(--text-secondary); line-height: 1.5; font-size: 0.9rem; margin-bottom: 1.5rem;">We sent a 6-digit verification code to <strong id="verificationEmailText" style="color: var(--pastel-lavender);">your email</strong>. Enter it below to activate your account:</p>
-      
-      <form id="otpVerifyForm" style="margin-bottom: 1rem;">
-        <div class="form-group" style="margin-bottom: 1.2rem;">
-          <input type="text" id="otpCodeInput" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required autocomplete="one-time-code" style="text-align: center; font-size: 1.8rem; font-weight: 800; letter-spacing: 8px; font-family: monospace; padding: 0.8rem; border-color: var(--pastel-lavender);">
+  <!-- ══════════════ OTP VERIFICATION MODAL ══════════════ -->
+  <div class="modal-overlay" id="otpVerifyModal">
+    <div class="modal-content glass-panel" style="max-width: 420px; text-align: center;">
+      <button class="modal-close" id="otpVerifyCloseBtn">&times;</button>
+      <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📩</div>
+      <h2>Verify Your Email</h2>
+      <p class="modal-subtitle" id="otpNoticeEmail">We sent a 6-digit verification code to your email. Enter it below to activate your account:</p>
+      <form id="otpVerifyForm" class="modal-form" style="margin-top: 1.5rem;">
+        <div class="form-group">
+          <input type="text" id="otpInputCode" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required style="font-size: 1.8rem; letter-spacing: 8px; font-weight: 800; text-align: center; font-family: monospace; padding: 0.8rem;">
         </div>
-        <button type="submit" class="submit-btn" style="width: 100%;">Verify & Activate Account ✨</button>
+        <button type="submit" class="submit-btn" style="width: 100%; margin-top: 0.5rem;">Verify & Proceed</button>
       </form>
+      <p class="modal-switch" style="margin-top: 1.2rem; font-size: 0.85rem;">Didn't get the code? <a href="#" id="resendOtpBtn">Resend Code</a></p>
+    </div>
+  </div>
 
-      <div style="font-size: 0.82rem; color: var(--text-muted);">
-        Didn't receive the code? <a href="#" id="resendOtpBtn" style="color: var(--pastel-lavender); font-weight: 600;">Resend Code</a>
+  <!-- ══════════════ FORGOT PASSWORD MODAL ══════════════ -->
+  <div class="modal-overlay" id="forgotPasswordModal">
+    <div class="modal-content glass-panel" style="max-width: 440px;">
+      <button class="modal-close" id="forgotPasswordCloseBtn">&times;</button>
+      
+      <!-- Step 1: Request Reset Code -->
+      <div id="forgotStep1">
+        <h2>Reset Password 🔑</h2>
+        <p class="modal-subtitle">Enter your registered email address to receive a 6-digit reset code.</p>
+        <form id="forgotPasswordEmailForm" class="modal-form">
+          <div class="form-group">
+            <label for="forgotEmail">Email Address</label>
+            <input type="email" id="forgotEmail" placeholder="you@example.com" required>
+          </div>
+          <button type="submit" class="submit-btn" style="width: 100%;">Send Reset Code</button>
+        </form>
+        <p class="modal-switch" style="margin-top: 1rem;">Remember your password? <a href="#" id="forgotToLoginLink">Log in</a></p>
       </div>
+
+      <!-- Step 2: Enter OTP & New Password -->
+      <div id="forgotStep2" style="display: none;">
+        <h2>Set New Password 🔐</h2>
+        <p class="modal-subtitle" id="forgotOtpNotice">Enter the 6-digit code sent to your email and your new password.</p>
+        <form id="forgotPasswordResetForm" class="modal-form">
+          <div class="form-group">
+            <label for="forgotOtpCode">6-Digit Verification Code</label>
+            <input type="text" id="forgotOtpCode" placeholder="123456" maxlength="6" pattern="[0-9]{6}" required style="letter-spacing: 4px; font-weight: 700; text-align: center;">
+          </div>
+          <div class="form-group">
+            <label for="forgotNewPassword">New Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="forgotNewPassword" placeholder="••••••••" required minlength="6">
+              <button type="button" class="password-toggle-btn" aria-label="Toggle Password Visibility">
+                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle class="eye-pupil" cx="12" cy="12" r="3"></circle>
+                  <line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display: none;"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="forgotConfirmPassword">Confirm New Password</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="forgotConfirmPassword" placeholder="••••••••" required minlength="6">
+              <button type="button" class="password-toggle-btn" aria-label="Toggle Password Visibility">
+                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path class="eye-open" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle class="eye-pupil" cx="12" cy="12" r="3"></circle>
+                  <line class="eye-slash" x1="1" y1="1" x2="23" y2="23" style="display: none;"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="submit-btn" style="width: 100%;">Reset Password & Login</button>
+        </form>
+      </div>
+
     </div>
   </div>
 

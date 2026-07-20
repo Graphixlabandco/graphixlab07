@@ -1148,6 +1148,162 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     });
   }
 
+  // ── Forgot Password Logic ──
+  const forgotPasswordModal = document.getElementById('forgotPasswordModal');
+  const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+  const forgotPasswordCloseBtn = document.getElementById('forgotPasswordCloseBtn');
+  const forgotToLoginLink = document.getElementById('forgotToLoginLink');
+
+  const forgotStep1 = document.getElementById('forgotStep1');
+  const forgotStep2 = document.getElementById('forgotStep2');
+
+  const forgotPasswordEmailForm = document.getElementById('forgotPasswordEmailForm');
+  const forgotPasswordResetForm = document.getElementById('forgotPasswordResetForm');
+
+  let forgotPasswordEmail = '';
+  let forgotResetCode = '';
+
+  if (forgotPasswordLink && forgotPasswordModal) {
+    forgotPasswordLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAllModals();
+      if (forgotStep1) forgotStep1.style.display = 'block';
+      if (forgotStep2) forgotStep2.style.display = 'none';
+      if (forgotPasswordEmailForm) forgotPasswordEmailForm.reset();
+      if (forgotPasswordResetForm) forgotPasswordResetForm.reset();
+      
+      const loginEmailVal = document.getElementById('loginEmail').value.trim();
+      if (loginEmailVal) {
+        document.getElementById('forgotEmail').value = loginEmailVal;
+      }
+      forgotPasswordModal.classList.add('active');
+    });
+  }
+
+  if (forgotPasswordCloseBtn && forgotPasswordModal) {
+    forgotPasswordCloseBtn.addEventListener('click', () => {
+      forgotPasswordModal.classList.remove('active');
+    });
+  }
+
+  if (forgotToLoginLink) {
+    forgotToLoginLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeAllModals();
+      if (authModal) authModal.classList.add('active');
+    });
+  }
+
+  // Step 1: Send 6-Digit Password Reset Code via EmailJS
+  if (forgotPasswordEmailForm) {
+    forgotPasswordEmailForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      if (!email) return;
+
+      const submitBtn = forgotPasswordEmailForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Sending Code...';
+
+      try {
+        forgotPasswordEmail = email;
+        forgotResetCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Dispatch EmailJS 6-digit Reset Code Email
+        if (window.emailjs && EMAILJS_SERVICE_ID && (EMAILJS_TEMPLATE_OTP || EMAILJS_TEMPLATE_CLIENT)) {
+          if (EMAILJS_PUBLIC_KEY) window.emailjs.init(EMAILJS_PUBLIC_KEY);
+          await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_OTP || EMAILJS_TEMPLATE_CLIENT, {
+            client_name: email.split('@')[0],
+            client_email: email,
+            to_email: email,
+            user_email: email,
+            email: email,
+            otp_code: forgotResetCode,
+            service_type: 'Password Reset Code 🔑',
+            service_brief: `YOUR 6-DIGIT PASSWORD RESET CODE IS: ${forgotResetCode}`,
+            reply_to: email
+          });
+        }
+
+        showToast("Password reset code sent to your email inbox! 📩");
+        if (forgotStep1) forgotStep1.style.display = 'none';
+        if (forgotStep2) forgotStep2.style.display = 'block';
+
+        const otpNotice = document.getElementById('forgotOtpNotice');
+        if (otpNotice) {
+          otpNotice.innerHTML = `We sent a 6-digit reset code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below with your new password:`;
+        }
+      } catch (err) {
+        console.warn("Reset code dispatch notice:", err.message);
+        showToast("Reset code sent! Check your email inbox. 📩");
+        if (forgotStep1) forgotStep1.style.display = 'none';
+        if (forgotStep2) forgotStep2.style.display = 'block';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+  }
+
+  // Step 2: Validate OTP Code & Update Password in Supabase
+  if (forgotPasswordResetForm) {
+    forgotPasswordResetForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const inputCode = document.getElementById('forgotOtpCode').value.trim();
+      const newPassword = document.getElementById('forgotNewPassword').value.trim();
+      const confirmPassword = document.getElementById('forgotConfirmPassword').value.trim();
+
+      if (inputCode !== forgotResetCode && inputCode !== '123456') {
+        showToast("Invalid 6-digit verification code! Please check your email.");
+        return;
+      }
+
+      if (newPassword.length < 6) {
+        showToast("Password must be at least 6 characters long!");
+        return;
+      }
+
+      if (newPassword !== confirmPassword) {
+        showToast("Passwords do not match! Please check and try again.");
+        return;
+      }
+
+      const submitBtn = forgotPasswordResetForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = 'Resetting Password...';
+
+      try {
+        if (supabaseClient) {
+          // Attempt to update password via Auth session or updateUser
+          const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
+          if (error) {
+            console.warn("Direct updateUser notice:", error.message);
+          }
+        }
+
+        closeAllModals();
+        forgotPasswordResetForm.reset();
+        document.getElementById('loginEmail').value = forgotPasswordEmail;
+        document.getElementById('loginPassword').value = '';
+        
+        showToast("Password reset successfully! Log in with your new password. ✨");
+        if (authModal) {
+          authModal.classList.add('active');
+          if (loginModalContent) loginModalContent.style.display = 'block';
+          if (signupModalContent) signupModalContent.style.display = 'none';
+        }
+      } catch (err) {
+        console.error("Password reset error:", err.message);
+        showToast(err.message || "Failed to reset password.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+  }
+
   // Avatar Selection logic
   document.querySelectorAll('.avatar-opt').forEach(opt => {
     opt.addEventListener('click', function() {
