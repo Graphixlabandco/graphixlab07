@@ -1043,7 +1043,24 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
           showToast("Please enter the 6-digit verification code sent to your inbox! ✉️");
         }
       } else if (err.message && err.message.toLowerCase().includes('invalid login credentials')) {
-        showToast("Invalid email or password! Please check your details or click 'Forgot Password?' below.");
+        // Dispatch 6-digit OTP code so user can verify and access their account immediately!
+        pendingSignupEmail = email;
+        generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        sendOtpViaEmailJS(email, generatedOtpCode);
+
+        closeAllModals();
+        const otpVerifyModal = document.getElementById('otpVerifyModal');
+        if (otpVerifyModal) {
+          const emailText = document.getElementById('otpNoticeEmail');
+          if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to <strong style="color: var(--pastel-lavender);">${email}</strong>. Enter it below to log in directly:`;
+          otpVerifyModal.classList.add('active');
+          const otpInput = document.getElementById('otpInputCode');
+          if (otpInput) {
+            otpInput.value = '';
+            otpInput.focus();
+          }
+        }
+        showToast("Invalid password! We sent a 6-digit code to your email so you can log in directly. ✉️");
       } else {
         showToast(err.message || "Invalid email or password!");
       }
