@@ -1340,38 +1340,6 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     });
   }
 
-  // ── Google OAuth & Email Verification ──
-  const googleLoginBtn = document.getElementById('googleLoginBtn');
-  const googleSignupBtn = document.getElementById('googleSignupBtn');
-
-  async function handleGoogleOAuth() {
-    const userEmail = prompt("Enter your Google email address to receive your 6-digit verification code:");
-    if (!userEmail || !userEmail.includes('@')) {
-      showToast("Please enter a valid Google email address.");
-      return;
-    }
-
-    pendingSignupEmail = userEmail;
-    generatedOtpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    sendOtpViaEmailJS(userEmail, generatedOtpCode);
-
-    closeAllModals();
-    const otpVerifyModal = document.getElementById('otpVerifyModal');
-    if (otpVerifyModal) {
-      const emailText = document.getElementById('otpNoticeEmail');
-      if (emailText) emailText.innerHTML = `We sent a 6-digit verification code to your Google email <strong style="color: var(--pastel-lavender);">${userEmail}</strong>. Enter it below to proceed:`;
-      otpVerifyModal.classList.add('active');
-      const otpInput = document.getElementById('otpInputCode');
-      if (otpInput) {
-        otpInput.value = '';
-        otpInput.focus();
-      }
-    }
-  }
-
-  if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleOAuth);
-  if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleOAuth);
-
   // Avatar Selection logic (Vibrant modern customizable styles)
   document.querySelectorAll('.avatar-opt').forEach(opt => {
     opt.addEventListener('click', function() {
