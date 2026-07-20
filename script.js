@@ -1804,7 +1804,46 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     return formatted;
   }
 
-  chatInputForm.addEventListener('submit', (e) => {
+  const SYSTEM_PROMPT = `You are Riya AI, an intelligent, helpful, and friendly AI assistant for Graphix Lab Studio.
+Graphix Lab offers 6 design & web development services:
+1. Logo & Brand Identity
+2. Branding & Landing Pages
+3. Short-Form Video Editing (Reels, Shorts, TikToks)
+4. High-CTR YouTube Thumbnails & Social Covers
+5. Interactive Prototypes & 3D Models
+6. Vibe Coding Websites & Web Apps
+
+Instructions:
+- Answer ANY question the user asks accurately, politely, and intelligently in clear English.
+- If the user asks general questions (coding, science, creative writing, personal advice, tech, math, jokes, anything), answer them fully like ChatGPT.
+- If the user asks about Graphix Lab, guide them on how to book in the 'Start Your Project' section.
+- Use emojis, bold formatting, and clear structured paragraphs when helpful.`;
+
+  async function fetchLiveAIResponse(userText) {
+    // 1. Try Puter.js Online AI Engine (GPT-4o-mini / Llama 3)
+    if (window.puter && window.puter.ai && typeof window.puter.ai.chat === 'function') {
+      try {
+        const response = await window.puter.ai.chat([
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userText }
+        ], { model: 'gpt-4o-mini' });
+
+        if (response) {
+          const text = typeof response === 'string' 
+            ? response 
+            : (response.message && response.message.content ? response.message.content : response.toString());
+          if (text && text.trim()) return text;
+        }
+      } catch (puterErr) {
+        console.warn("Puter AI online dispatch fallback notice:", puterErr);
+      }
+    }
+
+    // 2. Fallback to Local Knowledge Engine if offline
+    return generateRiyaAIResponse(userText);
+  }
+
+  chatInputForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const userText = chatMessageInput.value.trim();
     if (!userText) return;
@@ -1817,13 +1856,18 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
     // 2. Show typing indicator
     showTypingIndicator();
 
-    // 3. Process AI Response asynchronously
-    setTimeout(() => {
+    // 3. Process Live Online AI Response
+    try {
+      const botReply = await fetchLiveAIResponse(userText);
       removeTypingIndicator();
-      const botReply = generateRiyaAIResponse(userText);
       appendMessage('bot', botReply);
       logChatMessage('riya', botReply);
-    }, 550);
+    } catch (err) {
+      removeTypingIndicator();
+      const fallbackReply = generateRiyaAIResponse(userText);
+      appendMessage('bot', fallbackReply);
+      logChatMessage('riya', fallbackReply);
+    }
   });
 })();
 
