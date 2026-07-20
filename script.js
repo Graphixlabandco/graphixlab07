@@ -20,6 +20,19 @@ let localUploadedUrl = null;
 let pendingSignupEmail = '';
 let generatedOtpCode = '';
 
+// ── Global Toast Notification Engine ──
+function showToast(message) {
+  let toast = document.querySelector('.toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
 // ── Three.js Cosmic Space & Asteroids Background ──
 (function initThreeBackground() {
   const canvas = document.getElementById('bgCanvas');
@@ -676,18 +689,6 @@ let generatedOtpCode = '';
     return div.innerHTML;
   }
 
-  function showToast(message) {
-    let toast = document.querySelector('.toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-  }
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -777,18 +778,6 @@ let generatedOtpCode = '';
   const verificationCloseBtn = document.getElementById('verificationCloseBtn');
   const profilePicInput = document.getElementById('profilePicInput');
   let localUploadedUrl = null;
-
-  function showToast(message) {
-    let toast = document.querySelector('.toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-  }
 
   // Handle password visibility toggle click
   document.querySelectorAll('.password-toggle-btn').forEach(btn => {
@@ -1704,18 +1693,6 @@ let generatedOtpCode = '';
   const adminReviewCount = document.getElementById('adminReviewCount');
 
   if (!adminModal) return;
-
-  function showToast(message) {
-    let toast = document.querySelector('.toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'toast';
-      document.body.appendChild(toast);
-    }
-    toast.textContent = message;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
-  }
 
   // Tab switching logic
   document.querySelectorAll('.admin-tab').forEach(tabBtn => {
