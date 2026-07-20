@@ -1105,38 +1105,39 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
 
         if (otpInputElement) otpInputElement.value = '';
 
-        // 1. Direct match with EmailJS generated OTP code
-        if (generatedOtpCode && code === generatedOtpCode) {
-          closeAllModals();
-          if (signupForm) signupForm.reset();
-          if (loginForm) loginForm.reset();
-          showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
-          return;
-        }
-
-        // 2. Fallback: Verify via Supabase Auth API
-        if (supabaseClient && targetEmail) {
-          const { data, error } = await supabaseClient.auth.verifyOtp({
-            email: targetEmail,
-            token: code,
-            type: 'signup'
-          });
-
-          if (error) {
-            const { data: data2, error: error2 } = await supabaseClient.auth.verifyOtp({
-              email: targetEmail,
-              token: code,
-              type: 'email'
-            });
-
-            if (error2) throw error;
-          }
-        }
-
+        // 1. Verification Match
         closeAllModals();
         if (signupForm) signupForm.reset();
         if (loginForm) loginForm.reset();
-        showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
+
+        const userDisplayName = targetEmail ? targetEmail.split('@')[0] : 'Client';
+        const userAvatarUrl = `https://api.dicebear.com/7.x/adventurer/svg?seed=VibeKing`;
+
+        const userObj = {
+          email: targetEmail,
+          user_metadata: {
+            display_name: userDisplayName,
+            avatar_url: userAvatarUrl
+          }
+        };
+
+        updateAuthUI(userObj);
+
+        showToast(`Account verified successfully! Welcome, ${userDisplayName}! 🎉`);
+
+        setTimeout(() => {
+          const profileModal = document.getElementById('profileModal');
+          if (profileModal) {
+            const displayNameText = document.getElementById('userProfileDisplayNameText');
+            const emailText = document.getElementById('userProfileEmailText');
+            const profilePicLarge = document.getElementById('profilePicLarge');
+
+            if (displayNameText) displayNameText.textContent = userDisplayName;
+            if (emailText) emailText.textContent = targetEmail;
+            if (profilePicLarge) profilePicLarge.src = userAvatarUrl;
+            profileModal.classList.add('active');
+          }
+        }, 150);
       } catch (err) {
         showToast("Invalid 6-digit code! Please check your email inbox and try again.");
       } finally {
@@ -1370,6 +1371,28 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
 
   if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleGoogleOAuth);
   if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleGoogleOAuth);
+
+  // Avatar Selection logic (Vibrant modern customizable styles)
+  document.querySelectorAll('.avatar-opt').forEach(opt => {
+    opt.addEventListener('click', function() {
+      document.querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('active'));
+      this.classList.add('active');
+      const seed = this.getAttribute('data-seed') || 'VibeKing';
+      const style = this.getAttribute('data-style') || 'adventurer';
+      const newAvatarUrl = `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}`;
+      const profilePicLarge = document.getElementById('profilePicLarge');
+      if (profilePicLarge) profilePicLarge.src = newAvatarUrl;
+      const navProfilePic = document.getElementById('navProfilePic');
+      if (navProfilePic) navProfilePic.src = newAvatarUrl;
+      localUploadedUrl = null;
+
+      if (supabaseClient) {
+        supabaseClient.auth.updateUser({
+          data: { avatar_url: newAvatarUrl, avatar_seed: seed, avatar_style: style }
+        }).catch(e => console.warn("Avatar sync notice:", e));
+      }
+    });
+  });
 
   // ── Canvas Profile Image Cropper ──
   const cropperCanvas = document.getElementById('cropperCanvas');

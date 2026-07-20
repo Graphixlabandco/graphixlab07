@@ -525,12 +525,14 @@
           <img src="" id="profilePicLarge" alt="Avatar" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=user';">
         </div>
         <div class="avatar-selector">
-          <label>Choose Avatar:</label>
-          <div class="avatar-options">
-            <button type="button" class="avatar-opt active" data-seed="Riya">🤖</button>
-            <button type="button" class="avatar-opt" data-seed="Creativity">🎨</button>
-            <button type="button" class="avatar-opt" data-seed="Design">💎</button>
-            <button type="button" class="avatar-opt" data-seed="Engine">⚡</button>
+          <label style="font-weight: 600; color: var(--pastel-lavender);">Choose Avatar Style:</label>
+          <div class="avatar-options" style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.4rem;">
+            <button type="button" class="avatar-opt active" data-style="adventurer" data-seed="VibeKing">🎨 Artist</button>
+            <button type="button" class="avatar-opt" data-style="micah" data-seed="LuxUser">👑 Luxury</button>
+            <button type="button" class="avatar-opt" data-style="bottts-neutral" data-seed="CyberBot">⚡ Cyber</button>
+            <button type="button" class="avatar-opt" data-style="lorelei" data-seed="DesignGoddess">✨ Creator</button>
+            <button type="button" class="avatar-opt" data-style="fun-emoji" data-seed="CoolVibe">😎 Vibe</button>
+            <button type="button" class="avatar-opt" data-style="avataaars" data-seed="ModernPro">🚀 Pro</button>
           </div>
           <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
             <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 8px;">
