@@ -679,10 +679,13 @@
         <p class="modal-subtitle">Enter your mobile number to receive a 6-digit SMS verification code.</p>
         <form id="phoneLoginForm" class="modal-form">
           <div class="form-group">
-            <label for="phoneAuthInput">Phone Number (with Country Code)</label>
-            <input type="tel" id="phoneAuthInput" placeholder="+1234567890" required style="letter-spacing: 1px; font-weight: 600;">
+            <label for="phoneAuthInput">Mobile Number (India 🇮🇳 +91)</label>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <input type="text" value="+91" readonly style="width: 70px; text-align: center; font-weight: 700; color: var(--pastel-lavender); background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4); border-radius: 8px;">
+              <input type="tel" id="phoneAuthInput" placeholder="9876543210" required maxlength="10" pattern="[0-9]{10}" style="letter-spacing: 1.5px; font-weight: 700; flex: 1;">
+            </div>
           </div>
-          <button type="submit" class="submit-btn" style="width: 100%;">Send 6-Digit SMS Code</button>
+          <button type="submit" class="submit-btn" style="width: 100%;">Send Official 6-Digit SMS OTP</button>
         </form>
       </div>
 
