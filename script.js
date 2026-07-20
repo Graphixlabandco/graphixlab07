@@ -1714,7 +1714,12 @@ let generatedOtpCode = '';
 
   // Open & Close Admin Modal
   if (adminOpenBtn) {
-    adminOpenBtn.addEventListener('click', async () => {
+    adminOpenBtn.addEventListener('click', async (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      closeAllModals();
       let user = localAuthState;
       if (supabaseClient) {
         try {
