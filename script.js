@@ -373,10 +373,24 @@ let generatedOtpCode = '';
           document.activeElement.blur();
         }
         const serviceId = card.getAttribute('data-service');
+        const cardTitle = card.querySelector('.card-title')?.textContent || 'Service';
         
         // Pre-fill selection dropdown
         if (bookingServiceSelect && serviceId) {
           bookingServiceSelect.value = serviceId;
+          bookingServiceSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Auto-fill logged in user details if available
+        if (localAuthState) {
+          const bookingName = document.getElementById('bookingName');
+          const bookingEmail = document.getElementById('bookingEmail');
+          if (bookingName && !bookingName.value) {
+            bookingName.value = localAuthState.user_metadata?.display_name || (localAuthState.email ? localAuthState.email.split('@')[0] : '');
+          }
+          if (bookingEmail && !bookingEmail.value) {
+            bookingEmail.value = localAuthState.email || '';
+          }
         }
 
         // Flip card back to front
@@ -387,7 +401,7 @@ let generatedOtpCode = '';
         if (bookingSection) {
           bookingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-        showToast("Service selected! Fill out your commission details below. 🎨");
+        showToast(`${cardTitle} selected! Fill out your project details below. 🎨`);
       });
     }
   });
