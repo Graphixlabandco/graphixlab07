@@ -1085,7 +1085,8 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   if (otpVerifyForm) {
     otpVerifyForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const code = document.getElementById('otpCodeInput').value.trim();
+      const otpInputElement = document.getElementById('otpInputCode') || document.getElementById('otpCodeInput');
+      const code = otpInputElement ? otpInputElement.value.trim() : '';
       
       if (!code || code.length !== 6) {
         showToast("Please enter a valid 6-digit verification code!");
@@ -1098,7 +1099,9 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
       submitBtn.innerHTML = 'Verifying...';
 
       try {
-        const targetEmail = pendingSignupEmail || document.getElementById('signupEmail').value.trim() || document.getElementById('loginEmail').value.trim();
+        const signupEmailEl = document.getElementById('signupEmail');
+        const loginEmailEl = document.getElementById('loginEmail');
+        const targetEmail = pendingSignupEmail || (signupEmailEl ? signupEmailEl.value.trim() : '') || (loginEmailEl ? loginEmailEl.value.trim() : '');
 
         // 1. Direct match with EmailJS generated OTP code
         if (generatedOtpCode && code === generatedOtpCode) {
