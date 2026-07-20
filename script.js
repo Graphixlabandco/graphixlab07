@@ -1172,17 +1172,25 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   if (forgotPasswordLink && forgotPasswordModal) {
     forgotPasswordLink.addEventListener('click', (e) => {
       e.preventDefault();
+      const loginEmailVal = document.getElementById('loginEmail').value.trim();
       closeAllModals();
       if (forgotStep1) forgotStep1.style.display = 'block';
       if (forgotStep2) forgotStep2.style.display = 'none';
       if (forgotPasswordEmailForm) forgotPasswordEmailForm.reset();
       if (forgotPasswordResetForm) forgotPasswordResetForm.reset();
       
-      const loginEmailVal = document.getElementById('loginEmail').value.trim();
       if (loginEmailVal) {
         document.getElementById('forgotEmail').value = loginEmailVal;
+        forgotPasswordModal.classList.add('active');
+        // Auto trigger 6-digit reset code dispatch for user convenience!
+        if (forgotPasswordEmailForm) {
+          setTimeout(() => {
+            forgotPasswordEmailForm.dispatchEvent(new Event('submit'));
+          }, 150);
+        }
+      } else {
+        forgotPasswordModal.classList.add('active');
       }
-      forgotPasswordModal.classList.add('active');
     });
   }
 
