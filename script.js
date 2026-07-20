@@ -1103,18 +1103,19 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         const loginEmailEl = document.getElementById('loginEmail');
         const targetEmail = pendingSignupEmail || (signupEmailEl ? signupEmailEl.value.trim() : '') || (loginEmailEl ? loginEmailEl.value.trim() : '');
 
+        if (otpInputElement) otpInputElement.value = '';
+
         // 1. Direct match with EmailJS generated OTP code
         if (generatedOtpCode && code === generatedOtpCode) {
           closeAllModals();
-          signupForm.reset();
-          loginForm.reset();
-          document.getElementById('otpCodeInput').value = '';
+          if (signupForm) signupForm.reset();
+          if (loginForm) loginForm.reset();
           showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
           return;
         }
 
-        // 2. Fallback check via Supabase verifyOtp API
-        if (supabaseClient) {
+        // 2. Fallback: Verify via Supabase Auth API
+        if (supabaseClient && targetEmail) {
           const { data, error } = await supabaseClient.auth.verifyOtp({
             email: targetEmail,
             token: code,
@@ -1133,13 +1134,11 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
         }
 
         closeAllModals();
-        signupForm.reset();
-        loginForm.reset();
-        document.getElementById('otpCodeInput').value = '';
+        if (signupForm) signupForm.reset();
+        if (loginForm) loginForm.reset();
         showToast("Account verified & logged in successfully! Welcome to Graphix Lab! 🎉");
       } catch (err) {
-        console.error("OTP verification error:", err.message);
-        showToast("Invalid code: " + (err.message || "Please check the 6-digit code and try again."));
+        showToast("Invalid 6-digit code! Please check your email inbox and try again.");
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
