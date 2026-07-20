@@ -681,6 +681,10 @@
 
       <!-- Tab 4: AI Chat Logs -->
       <div class="admin-tab-content" id="tabChatLogs">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h3 style="font-size: 0.95rem; color: #ffffff; margin: 0;">Recorded Client & AI Chat Logs</h3>
+          <button class="glass-btn btn-delete" id="clearAllChatLogsBtn" style="padding: 0.4rem 0.85rem; font-size: 0.8rem;">🗑️ Clear All Chat Logs</button>
+        </div>
         <div class="admin-table-wrapper">
           <table class="admin-table">
             <thead>
@@ -689,10 +693,11 @@
                 <th>User / Session</th>
                 <th>Sender</th>
                 <th>Message Content</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="adminChatLogsTableBody">
-              <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading live AI chat logs...</td></tr>
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading live AI chat logs...</td></tr>
             </tbody>
           </table>
         </div>

@@ -1576,6 +1576,26 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
   async function loadChatLogs() {
     const adminChatLogsTableBody = document.getElementById('adminChatLogsTableBody');
     const adminChatLogCount = document.getElementById('adminChatLogCount');
+    const clearAllChatLogsBtn = document.getElementById('clearAllChatLogsBtn');
+
+    if (clearAllChatLogsBtn) {
+      clearAllChatLogsBtn.onclick = async () => {
+        if (!confirm("Are you sure you want to delete ALL AI & user chat logs from the database?")) return;
+        try {
+          const { error } = await supabaseClient
+            .from('chat_messages')
+            .delete()
+            .neq('id', '00000000-0000-0000-0000-000000000000');
+
+          if (error) throw error;
+          showToast("All AI chat logs cleared successfully!");
+          await loadChatLogs();
+        } catch (err) {
+          console.error("Clear chat logs error:", err.message);
+          showToast("Failed to clear chat logs: " + err.message);
+        }
+      };
+    }
 
     try {
       const { data, error } = await supabaseClient
@@ -1592,7 +1612,7 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
       if (!adminChatLogsTableBody) return;
 
       if (logs.length === 0) {
-        adminChatLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 2rem;">No AI chat logs recorded yet in database.</td></tr>`;
+        adminChatLogsTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No AI chat logs recorded yet in database.</td></tr>`;
         return;
       }
 
@@ -1608,13 +1628,36 @@ const EMAILJS_TEMPLATE_OTP = "template_phjjh04";    // Dedicated 6-Digit OTP ver
             <td><span style="font-size: 0.78rem; font-family: monospace; color: var(--pastel-lavender);">${escapeHtml(log.user_email || log.session_id || 'Anonymous')}</span></td>
             <td>${senderBadge}</td>
             <td style="max-width: 320px; line-height: 1.4; font-size: 0.82rem;">${escapeHtml(log.message || '')}</td>
+            <td style="white-space: nowrap;">
+              <button class="admin-action-btn btn-delete delete-chatlog-btn" data-id="${log.id}">Delete</button>
+            </td>
           </tr>
         `;
       }).join('');
+
+      // Wire delete single chat log buttons
+      adminChatLogsTableBody.querySelectorAll('.delete-chatlog-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const logId = btn.getAttribute('data-id');
+          try {
+            const { error } = await supabaseClient
+              .from('chat_messages')
+              .delete()
+              .eq('id', logId);
+
+            if (error) throw error;
+            showToast("Chat log record deleted!");
+            await loadChatLogs();
+          } catch (err) {
+            console.error("Delete chat log error:", err.message);
+            showToast("Failed to delete chat record: " + err.message);
+          }
+        });
+      });
     } catch (err) {
       console.warn("Error loading admin chat logs:", err.message);
       if (adminChatLogsTableBody) {
-        adminChatLogsTableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chat logging table ready on Supabase. (${err.message})</td></tr>`;
+        adminChatLogsTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Chat logging table ready on Supabase. (${err.message})</td></tr>`;
       }
     }
   }
