@@ -927,9 +927,74 @@ function showToast(message) {
       document.getElementById('profilePicLarge').src = `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}`;
     }
     
+    const editDisplayNameInput = document.getElementById('editDisplayNameInput');
+    if (editDisplayNameInput) editDisplayNameInput.value = displayName;
+
     localUploadedUrl = null; // Reset uploaded reference
     profileModal.classList.add('active');
   });
+
+  // Handle User Name Edit Submission in Profile Modal
+  const profileUpdateNameForm = document.getElementById('profileUpdateNameForm');
+  if (profileUpdateNameForm) {
+    profileUpdateNameForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const newNameInput = document.getElementById('editDisplayNameInput');
+      const newName = newNameInput ? newNameInput.value.trim() : '';
+      if (!newName) {
+        showToast("Please enter a valid display name.");
+        return;
+      }
+
+      if (localAuthState) {
+        if (!localAuthState.user_metadata) localAuthState.user_metadata = {};
+        localAuthState.user_metadata.display_name = newName;
+      }
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.auth.updateUser({
+            data: { display_name: newName }
+          });
+        } catch (err) {
+          console.warn("Name update metadata notice:", err.message);
+        }
+      }
+
+      updateAuthUI(localAuthState);
+      showToast(`User name updated to "${newName}"! ✨`);
+    });
+  }
+
+  // Handle Remove Profile Photo (Reset to Initials Monogram Avatar)
+  const removeProfilePicBtn = document.getElementById('removeProfilePicBtn');
+  if (removeProfilePicBtn) {
+    removeProfilePicBtn.addEventListener('click', async () => {
+      const displayName = localAuthState?.user_metadata?.display_name || (localAuthState?.email ? localAuthState.email.split('@')[0] : 'User');
+      const monogramAvatar = getInitialsAvatarUrl(displayName);
+
+      if (localAuthState && localAuthState.user_metadata) {
+        localAuthState.user_metadata.avatar_url = null;
+      }
+
+      const profilePicLarge = document.getElementById('profilePicLarge');
+      if (profilePicLarge) profilePicLarge.src = monogramAvatar;
+      const navProfilePic = document.getElementById('navProfilePic');
+      if (navProfilePic) navProfilePic.src = monogramAvatar;
+
+      if (supabaseClient) {
+        try {
+          await supabaseClient.auth.updateUser({
+            data: { avatar_url: null }
+          });
+        } catch (err) {
+          console.warn("Avatar removal notice:", err.message);
+        }
+      }
+
+      showToast("Profile photo removed! Monogram avatar restored. 🖼️");
+    });
+  }
 
   // Switch between Login and Signup modals
   switchToSignup.addEventListener('click', (e) => {

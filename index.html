@@ -504,20 +504,31 @@
         <div class="profile-avatar-large" style="width: 95px; height: 95px; border-radius: 50%; border: 3px solid #8a2be2; box-shadow: 0 0 25px rgba(138,43,226,0.5); overflow: hidden; background: #110826;">
           <img src="https://ui-avatars.com/api/?name=GL&background=8a2be2&color=ffffff&size=256&bold=true" id="profilePicLarge" alt="User Monogram" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
-        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-          <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; padding: 0.45rem 0.9rem; cursor: pointer; border-radius: 8px; background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4);">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            Upload Custom Image
+        <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+          <label for="profilePicInput" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.45rem 0.8rem; cursor: pointer; border-radius: 8px; background: rgba(138,43,226,0.2); border: 1px solid rgba(138,43,226,0.4);">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Upload Photo
           </label>
           <input type="file" id="profilePicInput" accept="image/*" style="display: none;">
+          
+          <button type="button" id="removeProfilePicBtn" class="glass-btn" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; padding: 0.45rem 0.8rem; cursor: pointer; border-radius: 8px; background: rgba(255,80,80,0.15); border: 1px solid rgba(255,80,80,0.3); color: #ff8080;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            Remove Photo
+          </button>
         </div>
       </div>
 
-      <div style="background: rgba(138, 43, 226, 0.1); border: 1px solid rgba(138, 43, 226, 0.25); border-radius: 12px; padding: 1.2rem; margin: 1.2rem 0; text-align: center;">
-        <span style="font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; color: var(--pastel-lavender); font-weight: 700;">USER IDENTITY</span>
-        <h3 id="userProfileDisplayNameText" style="font-size: 1.3rem; margin: 0.3rem 0; color: #fff;">Client</h3>
-        <p id="userProfileEmailText" style="font-size: 0.88rem; color: var(--text-secondary); margin: 0; font-family: monospace;">client@example.com</p>
-      </div>
+      <!-- Editable User Display Name Form -->
+      <form id="profileUpdateNameForm" style="background: rgba(138, 43, 226, 0.08); border: 1px solid rgba(138, 43, 226, 0.2); border-radius: 12px; padding: 1rem; margin: 1rem 0; text-align: left;">
+        <div class="form-group" style="margin-bottom: 0.6rem;">
+          <label for="editDisplayNameInput" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--pastel-lavender); font-weight: 700; display: block; margin-bottom: 0.4rem;">EDIT YOUR USER NAME</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="editDisplayNameInput" placeholder="Enter display name..." required style="flex: 1; padding: 0.55rem 0.8rem; border-radius: 8px; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); color: #fff; font-size: 0.9rem;">
+            <button type="submit" class="submit-btn" style="padding: 0.55rem 0.9rem; font-size: 0.8rem; white-space: nowrap;">Save Name</button>
+          </div>
+        </div>
+        <p id="userProfileEmailText" style="font-size: 0.82rem; color: var(--text-secondary); margin: 0.3rem 0 0 0; font-family: monospace; text-align: center;">client@example.com</p>
+      </form>
 
       <button type="button" class="submit-btn admin-open-btn" id="adminOpenBtn" style="background: var(--gradient-primary); color: #fff; width: 100%; margin-bottom: 0.8rem; display: none;">⚡ Open Admin Dashboard</button>
       <button class="submit-btn logout-btn" id="logoutBtn" style="background: var(--gradient-accent); color: #fff; width: 100%;">Log Out</button>
