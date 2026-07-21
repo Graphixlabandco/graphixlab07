@@ -42,7 +42,7 @@ function showToast(message) {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.5;
+  renderer.toneMappingExposure = 0.85;
 
   const scene = new THREE.Scene();
   
@@ -80,10 +80,10 @@ function showToast(message) {
   starGeo.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
   const starMat = new THREE.PointsMaterial({
-    size: 0.18,
+    size: 0.14,
     vertexColors: true,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.45,
     blending: THREE.AdditiveBlending
   });
 
@@ -130,10 +130,10 @@ function showToast(message) {
   galaxyGeo.setAttribute('color', new THREE.BufferAttribute(galaxyColors, 3));
 
   const galaxyMat = new THREE.PointsMaterial({
-    size: 0.14,
+    size: 0.11,
     vertexColors: true,
     transparent: true,
-    opacity: 0.6,
+    opacity: 0.3,
     blending: THREE.AdditiveBlending
   });
 
@@ -144,36 +144,36 @@ function showToast(message) {
   const asteroidsGroup = new THREE.Group();
   scene.add(asteroidsGroup);
 
-  // Light bright emissive materials for asteroids
+  // Low intensity materials for background asteroids
   const asteroidMaterials = [
     new THREE.MeshStandardMaterial({
       color: 0xc8b6ff,
       emissive: 0x9a7eff,
-      emissiveIntensity: 1.5,
-      roughness: 0.2,
-      metalness: 0.8
-    }), // Glowing Purple/Lavender
+      emissiveIntensity: 0.4,
+      roughness: 0.4,
+      metalness: 0.6
+    }),
     new THREE.MeshStandardMaterial({
       color: 0xb9fbc0,
       emissive: 0x4eff8a,
-      emissiveIntensity: 1.6,
-      roughness: 0.1,
-      metalness: 0.9
-    }), // Glowing Neon Mint
+      emissiveIntensity: 0.4,
+      roughness: 0.4,
+      metalness: 0.6
+    }),
     new THREE.MeshStandardMaterial({
       color: 0xffd6a5,
       emissive: 0xffaa44,
-      emissiveIntensity: 1.8,
-      roughness: 0.2,
-      metalness: 0.8
-    }), // Shining Golden Amber
+      emissiveIntensity: 0.4,
+      roughness: 0.4,
+      metalness: 0.6
+    }),
     new THREE.MeshStandardMaterial({
       color: 0xbbd0ff,
       emissive: 0x66aaff,
-      emissiveIntensity: 1.5,
-      roughness: 0.1,
-      metalness: 0.7
-    })  // Shining Electric Blue
+      emissiveIntensity: 0.4,
+      roughness: 0.4,
+      metalness: 0.6
+    })
   ];
 
   const asteroidGeometries = [
@@ -212,11 +212,11 @@ function showToast(message) {
     asteroids.push(mesh);
   }
 
-  // Lights to illuminate the materials and reflect specular rays
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+  // Low intensity ambient lighting
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.35);
   scene.add(ambientLight);
 
-  const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+  const mainLight = new THREE.DirectionalLight(0xffffff, 0.5);
   mainLight.position.set(5, 10, 10);
   scene.add(mainLight);
 
@@ -232,7 +232,7 @@ function showToast(message) {
     const scrollY = window.scrollY;
     // Hide when at the top (Hero Page), fade in as soon as user scrolls past 150px
     if (scrollY > 150) {
-      canvas.style.opacity = '1';
+      canvas.style.opacity = '0.35';
       canvas.style.visibility = 'visible';
     } else {
       canvas.style.opacity = '0';
