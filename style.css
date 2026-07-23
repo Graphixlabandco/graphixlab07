@@ -2623,6 +2623,14 @@ img { max-width: 100%; display: block; }
     height: 340px !important;
   }
 
+  .flip-card-front {
+    transform: rotateY(0deg) !important;
+  }
+
+  .flip-card-back {
+    transform: rotateY(180deg) !important;
+  }
+
   .flip-card-front,
   .flip-card-back {
     padding: 1.4rem 1.2rem !important;
