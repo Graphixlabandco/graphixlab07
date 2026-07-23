@@ -1224,7 +1224,7 @@ img { max-width: 100%; display: block; }
   }
 
   .flip-card {
-    height: 300px;
+    height: 340px;
   }
 
   .about-stats {
@@ -2620,8 +2620,7 @@ img { max-width: 100%; display: block; }
   }
 
   .flip-card {
-    height: auto !important;
-    min-height: 300px !important;
+    height: 340px !important;
   }
 
   .flip-card-front,
@@ -2876,7 +2875,7 @@ img { max-width: 100%; display: block; }
   }
 
   .flip-card {
-    min-height: 290px !important;
+    height: 340px !important;
   }
 
   .about-stats {
